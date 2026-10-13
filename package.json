@@ -1,0 +1,54 @@
+{
+  "name": "rentalsign",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "prisma generate && next build",
+    "build:cloud": "tsx scripts/prepare-postgres.ts && prisma generate --schema prisma/postgresql/schema.prisma && next build",
+    "start": "next start --hostname 0.0.0.0",
+    "start:production": "tsx scripts/production-init.ts && next start --hostname 0.0.0.0",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:generate": "prisma generate",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "seed": "tsx prisma/seed.ts",
+    "setup:local": "tsx scripts/setup-local.ts",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
+    "lucide-react": "^0.468.0",
+    "next": "16.4.0",
+    "pdfkit": "^0.17.2",
+    "prisma": "6.19.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.12",
+    "tsx": "^4.20.6"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@tailwindcss/postcss": "^4.1.16",
+    "@types/node": "^24.10.0",
+    "@types/pdfkit": "^0.17.3",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "16.4.0",
+    "prettier": "^3.9.10",
+    "tailwindcss": "^4.1.16",
+    "typescript": "^5.9.3"
+  }
+}
