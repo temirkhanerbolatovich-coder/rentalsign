@@ -78,7 +78,7 @@ export function Shell({
               Договор, ссылка и демоподписание — в одном месте.
             </p>
             <span className="mt-4 inline-flex items-center gap-2 text-[11px] text-teal-300">
-              Локальный MVP <ArrowUpRight size={12} />
+              Демонстрационный MVP <ArrowUpRight size={12} />
             </span>
           </div>
           <div className="flex items-center gap-3 border-t border-white/10 pt-5">

@@ -75,7 +75,7 @@ export function LoginForm() {
           </div>
         </div>
         <p className="text-xs text-slate-400">
-          Локальный MVP · Сделано для понятной аренды
+          Демонстрационный MVP · Сделано для понятной аренды
         </p>
         <div className="pointer-events-none absolute -right-40 -top-40 size-[550px] rounded-full border border-white/5" />
       </section>
