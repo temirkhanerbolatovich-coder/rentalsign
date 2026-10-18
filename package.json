@@ -14,6 +14,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "admin:create": "tsx scripts/create-admin.ts",
+    "admin:prepare": "tsx scripts/prepare-admin-workspace.ts",
     "seed": "tsx prisma/seed.ts",
     "setup:local": "tsx scripts/setup-local.ts",
     "test:e2e": "playwright test"

@@ -14,6 +14,7 @@ model Admin {
   id           String     @id @default(cuid())
   email        String     @unique
   passwordHash String
+  contractDefaults String?
   createdAt    DateTime   @default(now())
   sessions     Session[]
   properties   Property[]
@@ -42,10 +43,12 @@ model Property {
   rent        Int
   deposit     Int
   archived    Boolean    @default(false)
+  catalogSlug String?
   createdAt   DateTime   @default(now())
   contracts   Contract[]
 
   @@index([ownerId, archived])
+  @@unique([ownerId, catalogSlug])
 }
 
 model Contract {

@@ -42,17 +42,41 @@ export function generatePdf(
       paragraph(DEMO_WARNING);
       heading("1. Стороны договора");
       paragraph(
-        `Арендодатель: ${snapshot.landlordName}\nИИН/БИН: ${snapshot.landlordId || "не указан"}\nТелефон: ${snapshot.landlordPhone}`,
+        [
+          `Арендодатель: ${snapshot.landlordName}`,
+          `ИИН/БИН: ${snapshot.landlordId || "не указан"}`,
+          `Телефон: ${snapshot.landlordPhone}`,
+          snapshot.landlordDocument
+            ? `Удостоверение личности: ${snapshot.landlordDocument}`
+            : "",
+          snapshot.landlordDocumentIssued
+            ? `Кем и когда выдано: ${snapshot.landlordDocumentIssued}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n"),
       );
       paragraph(
-        `Арендатор: ${snapshot.tenantName}\nИИН: ${snapshot.tenantId || "не указан"}\nТелефон: ${snapshot.tenantPhone}`,
+        [
+          `Арендатор: ${snapshot.tenantName}`,
+          `ИИН: ${snapshot.tenantId || "не указан"}`,
+          `Телефон: ${snapshot.tenantPhone}`,
+          snapshot.tenantDocument
+            ? `Удостоверение личности / паспорт: ${snapshot.tenantDocument}`
+            : "",
+          snapshot.tenantAddress
+            ? `Адрес проживания: ${snapshot.tenantAddress}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n"),
       );
       heading("2. Объект и срок аренды");
       paragraph(
         `${snapshot.property.name}\nАдрес: ${snapshot.property.address}${snapshot.property.unit ? `, помещение ${snapshot.property.unit}` : ""}\n${snapshot.property.description}`,
       );
       paragraph(
-        `Заезд: ${dateTime(snapshot.checkIn)}\nВыезд: ${dateTime(snapshot.checkOut)}\nСтоимость аренды: ${money(snapshot.rent)}\nДепозит: ${money(snapshot.deposit)}`,
+        `Заезд: ${dateTime(snapshot.checkIn)}\nВыезд: ${dateTime(snapshot.checkOut)}\nАренда за весь срок: ${money(snapshot.rent)}\nДепозит: ${money(snapshot.deposit)}`,
       );
       let section = 3;
       for (const [key, label] of Object.entries(termLabels)) {

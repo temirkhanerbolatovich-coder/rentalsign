@@ -10,12 +10,15 @@ import {
   PenLine,
   ShieldCheck,
   ArrowUpRight,
+  Settings2,
 } from "lucide-react";
 import { clientApi } from "./client-api";
 const navigation = [
   { href: "/dashboard", label: "Обзор", icon: LayoutDashboard },
   { href: "/contracts", label: "Договоры", icon: FileText },
   { href: "/properties", label: "Объекты", icon: Building2 },
+  { href: "/templates", label: "Шаблон", icon: Settings2 },
+  { href: "/apartments", label: "Каталог", icon: ArrowUpRight },
 ];
 export function Shell({
   children,
@@ -145,7 +148,7 @@ export function Shell({
               key={href}
               href={href}
               aria-current={active(href) ? "page" : undefined}
-              className={`flex min-w-20 flex-col items-center gap-1 rounded-lg px-4 py-2 text-[11px] ${active(href) ? "bg-teal-50 text-teal-800" : "text-slate-500"}`}
+              className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] ${active(href) ? "bg-teal-50 text-teal-800" : "text-slate-500"}`}
             >
               <Icon size={20} />
               {label}

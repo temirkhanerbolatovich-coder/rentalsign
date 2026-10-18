@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -9,6 +11,11 @@ import {
   Archive,
   RotateCcw,
   DoorOpen,
+  Search,
+  FilePlus2,
+  Images,
+  ExternalLink,
+  Download,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -22,7 +29,13 @@ import { PageTitle } from "./page-title";
 import { clientApi } from "./client-api";
 import { money, propertyTypes } from "@/domain/contracts";
 import { propertySchema, type PropertyInput } from "@/validation/schemas";
-type PropertyRow = PropertyInput & { id: string; archived: boolean };
+import { findApartment } from "@/catalog/apartments";
+import { ApartmentPrice } from "./apartment-price";
+type PropertyRow = PropertyInput & {
+  id: string;
+  archived: boolean;
+  catalogSlug?: string | null;
+};
 export function PropertiesManager({
   properties,
 }: {
@@ -35,6 +48,9 @@ export function PropertiesManager({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [showArchive, setShowArchive] = useState(false);
+  const [search, setSearch] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
   function edit(property: PropertyRow | null) {
     setEditing(property);
     setError("");
@@ -80,119 +96,314 @@ export function PropertiesManager({
     );
     router.refresh();
   }
-  const visible = properties.filter((p) => showArchive || !p.archived);
+  async function importCatalog() {
+    setImporting(true);
+    setImportError("");
+    setMessage("");
+    try {
+      const result = await clientApi<{ imported: number; total: number }>(
+        "/api/catalog/import",
+        "POST",
+      );
+      setMessage(
+        result.imported
+          ? `Добавлено квартир: ${result.imported}. Всего из каталога: ${result.total}.`
+          : "Все квартиры из каталога уже добавлены.",
+      );
+      setShowArchive(false);
+      setSearch("");
+      router.refresh();
+    } catch (e) {
+      setImportError((e as Error).message);
+    } finally {
+      setImporting(false);
+    }
+  }
+  const activeCount = properties.filter(
+    (property) => !property.archived,
+  ).length;
+  const archivedCount = properties.length - activeCount;
+  const searchTerms = search
+    .toLocaleLowerCase("ru")
+    .replace(/ё/g, "е")
+    .split(/[\s,.]+/)
+    .filter(Boolean);
+  const visible = properties.filter((property) => {
+    if (property.archived !== showArchive) return false;
+    const searchable = `${property.name} ${property.address} ${property.unit}`
+      .toLocaleLowerCase("ru")
+      .replace(/ё/g, "е");
+    return searchTerms.every((term) => searchable.includes(term));
+  });
   return (
     <>
       <PageTitle
         title="Объекты недвижимости"
-        description="Сохраните адреса и цены — они будут под рукой при создании договора."
+        description="Ваши квартиры, фотографии и цены. Выберите квартиру — данные сразу попадут в новый договор."
       >
-        <Button onClick={() => edit(null)}>
-          <Plus />
-          Добавить объект
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={importCatalog}
+            disabled={importing}
+          >
+            <Download />
+            {importing ? "Добавляем…" : "Добавить из каталога"}
+          </Button>
+          <Button onClick={() => edit(null)}>
+            <Plus />
+            Добавить объект
+          </Button>
+        </div>
       </PageTitle>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">
-          {properties.filter((p) => !p.archived).length} действующих объектов
-        </p>
-        <label className="flex items-center gap-2 text-sm text-slate-500">
-          <input
-            type="checkbox"
-            checked={showArchive}
-            onChange={(e) => setShowArchive(e.target.checked)}
-            className="size-4 accent-teal-700"
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-2" aria-label="Статус квартир">
+          <Button
+            variant={showArchive ? "outline" : "default"}
+            onClick={() => setShowArchive(false)}
+            aria-pressed={!showArchive}
+          >
+            Активные <span className="ml-1 opacity-70">{activeCount}</span>
+          </Button>
+          <Button
+            variant={showArchive ? "default" : "outline"}
+            onClick={() => setShowArchive(true)}
+            aria-pressed={showArchive}
+          >
+            В архиве <span className="ml-1 opacity-70">{archivedCount}</span>
+          </Button>
+        </div>
+        <label className="relative block w-full sm:max-w-sm">
+          <span className="sr-only">Поиск по квартирам</span>
+          <Search
+            size={17}
+            className="pointer-events-none absolute left-3 top-3 text-slate-400"
           />
-          Показать архив
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Адрес, название или номер квартиры"
+            className="field pl-10"
+          />
         </label>
       </div>
+      {importError && (
+        <p role="alert" className="error mb-5">
+          {importError}
+        </p>
+      )}
       {message && (
         <p role="status" className="success mb-5">
           {message}
         </p>
       )}
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        {visible.map((property) => (
-          <article
-            key={property.id}
-            className={`card flex flex-col overflow-hidden ${property.archived ? "opacity-70" : ""}`}
-          >
-            <div className="flex h-24 items-center justify-between bg-gradient-to-br from-[#e5eeeb] to-[#f3f6f5] px-6">
-              <Building2
-                className="text-teal-700/60"
-                size={35}
-                strokeWidth={1.3}
-              />
-              <span className="rounded-md bg-white/70 px-3 py-1 text-[11px] text-teal-800">
-                {property.archived ? "В архиве" : propertyTypes[property.type]}
-              </span>
-            </div>
-            <div className="flex flex-1 flex-col p-6">
-              <h2 className="text-base font-semibold">{property.name}</h2>
-              <p className="mt-3 flex gap-2 text-xs leading-5 text-slate-500">
-                <MapPin size={15} className="mt-0.5 shrink-0" />
-                {property.address}
-              </p>
-              {property.unit && (
-                <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                  <DoorOpen size={15} />
-                  Помещение {property.unit}
-                </p>
-              )}
-              <p className="mt-4 line-clamp-2 text-xs leading-5 text-slate-500">
-                {property.description || "Описание не добавлено"}
-              </p>
-              <div className="mt-auto grid grid-cols-2 gap-4 pt-6">
-                <div>
-                  <p className="text-[10px] text-slate-400">СТОИМОСТЬ АРЕНДЫ</p>
-                  <p className="mt-1 text-base font-semibold">
-                    {money(property.rent)}
-                  </p>
+        {visible.map((property) => {
+          const apartment = property.catalogSlug
+            ? findApartment(property.catalogSlug)
+            : undefined;
+          const cover = apartment?.photos[0];
+          return (
+            <article
+              key={property.id}
+              className={`card flex min-w-0 flex-col overflow-hidden ${property.archived ? "opacity-80" : ""}`}
+            >
+              {cover && apartment ? (
+                <Link
+                  href={`/apartments/${apartment.slug}`}
+                  className="relative block aspect-[16/10]"
+                  aria-label={`Фотографии и описание: ${property.name}`}
+                >
+                  <Image
+                    src={cover.src}
+                    alt={cover.alt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                  <span className="absolute bottom-3 left-3 rounded-md bg-white px-3 py-1 text-xs text-teal-800">
+                    {property.archived ? "В архиве" : "Из каталога"}
+                  </span>
+                  <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-slate-950/70 px-2.5 py-1 text-xs text-white">
+                    <Images size={14} />
+                    {apartment.photos.length} фото
+                  </span>
+                </Link>
+              ) : (
+                <div className="flex h-24 items-center justify-between bg-gradient-to-br from-[#e5eeeb] to-[#f3f6f5] px-6">
+                  <Building2
+                    className="text-teal-700/60"
+                    size={35}
+                    strokeWidth={1.3}
+                  />
+                  <span className="rounded-md bg-white/70 px-3 py-1 text-[11px] text-teal-800">
+                    {property.archived
+                      ? "В архиве"
+                      : propertyTypes[property.type]}
+                  </span>
                 </div>
-                <div>
-                  <p className="text-[10px] text-slate-400">ДЕПОЗИТ</p>
-                  <p className="mt-1 text-base font-semibold">
-                    {money(property.deposit)}
+              )}
+              <div className="flex flex-1 flex-col p-5">
+                <h2 className="break-words text-base font-semibold leading-6">
+                  {property.name}
+                </h2>
+                <p className="mt-2 flex gap-2 text-sm leading-5 text-slate-500">
+                  <MapPin size={15} className="mt-0.5 shrink-0" />
+                  <span className="min-w-0 break-words">
+                    {property.address}
+                  </span>
+                </p>
+                {property.unit && (
+                  <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                    <DoorOpen size={15} />
+                    {property.type === "APARTMENT"
+                      ? "Квартира"
+                      : "Помещение"}{" "}
+                    {property.unit}
+                    {apartment &&
+                      ` · ${apartment.floor} этаж · ${apartment.entrance} подъезд`}
                   </p>
+                )}
+                {property.description && (
+                  <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-500">
+                    {property.description}
+                  </p>
+                )}
+                {apartment && (
+                  <div className="mt-4 rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">Цена в каталоге</p>
+                    <ApartmentPrice
+                      apartment={apartment}
+                      className="mt-1 block text-lg font-semibold"
+                    />
+                    {apartment.priceMin !== null &&
+                      apartment.pricingPeriod === "unconfirmed" && (
+                        <p className="mt-1 text-xs leading-5 text-amber-700">
+                          Период цены ещё не указан. Уточните сумму и сроки при
+                          оформлении.
+                        </p>
+                      )}
+                  </div>
+                )}
+                <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
+                  <div>
+                    <p className="text-xs leading-5 text-slate-500">
+                      Сумма для договора
+                    </p>
+                    <p className="mt-1 text-sm font-semibold">
+                      {property.catalogSlug && !property.rent
+                        ? "Указать в договоре"
+                        : money(property.rent)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs leading-5 text-slate-500">Депозит</p>
+                    <p className="mt-1 text-sm font-semibold">
+                      {money(property.deposit)}
+                    </p>
+                  </div>
+                </div>
+                {apartment && (
+                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-teal-800">
+                    <Link
+                      href={`/apartments/${apartment.slug}`}
+                      className="inline-flex items-center gap-1.5 hover:underline"
+                    >
+                      <Images size={14} />
+                      Фото и подробности
+                    </Link>
+                    {apartment.mapUrl && (
+                      <a
+                        href={apartment.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 hover:underline"
+                      >
+                        <ExternalLink size={14} />
+                        Открыть 2ГИС
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-3 border-t border-slate-100 p-4">
+                {!property.archived && (
+                  <Button className="w-full" asChild>
+                    <Link href={`/contracts/new?propertyId=${property.id}`}>
+                      <FilePlus2 />
+                      Создать договор
+                    </Link>
+                  </Button>
+                )}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => edit(property)}
+                  >
+                    <Pencil />
+                    Изменить
+                  </Button>
+                  <ConfirmAction
+                    title={
+                      property.archived
+                        ? "Восстановить объект?"
+                        : "Архивировать объект?"
+                    }
+                    description="Существующие договоры и их снимки сохранятся. Архивный объект нельзя выбрать для нового договора."
+                    label={property.archived ? "Восстановить" : "Архивировать"}
+                    trigger={
+                      <>
+                        {property.archived ? <RotateCcw /> : <Archive />}
+                        {property.archived ? "Восстановить" : "В архив"}
+                      </>
+                    }
+                    onConfirm={() => archive(property)}
+                  />
                 </div>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2 border-t border-slate-100 px-5 py-3">
-              <Button size="sm" variant="ghost" onClick={() => edit(property)}>
-                <Pencil />
-                Изменить
-              </Button>
-              <ConfirmAction
-                title={
-                  property.archived
-                    ? "Восстановить объект?"
-                    : "Архивировать объект?"
-                }
-                description="Существующие договоры и их снимки сохранятся. Архивный объект нельзя выбрать для нового договора."
-                label={property.archived ? "Восстановить" : "Архивировать"}
-                trigger={
-                  <>
-                    {property.archived ? <RotateCcw /> : <Archive />}
-                    {property.archived ? "Восстановить" : "В архив"}
-                  </>
-                }
-                onConfirm={() => archive(property)}
-              />
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
       {!visible.length && (
         <div className="card py-20 text-center">
           <Building2 size={36} className="mx-auto mb-4 text-slate-300" />
-          <p className="font-medium">Добавьте первый объект</p>
-          <p className="mt-2 text-sm text-slate-500">
-            Квартиру, апартаменты или гостиничный номер.
+          <p className="font-medium">
+            {search.trim()
+              ? "Квартиры не найдены"
+              : showArchive
+                ? "В архиве пока нет квартир"
+                : "Добавьте первую квартиру"}
           </p>
-          <Button className="mt-5" onClick={() => edit(null)}>
-            <Plus />
-            Добавить объект
-          </Button>
+          <p className="mt-2 text-sm text-slate-500">
+            {search.trim()
+              ? "Попробуйте другой адрес, название или номер квартиры."
+              : showArchive
+                ? "Здесь будут квартиры, которые вы убрали из активного списка."
+                : "Можно добавить все ваши квартиры из каталога одним нажатием."}
+          </p>
+          {search.trim() ? (
+            <Button
+              className="mt-5"
+              variant="outline"
+              onClick={() => setSearch("")}
+            >
+              Сбросить поиск
+            </Button>
+          ) : (
+            !showArchive && (
+              <Button
+                className="mt-5"
+                onClick={importCatalog}
+                disabled={importing}
+              >
+                <Download />
+                {importing ? "Добавляем…" : "Добавить из каталога"}
+              </Button>
+            )
+          )}
         </div>
       )}
       <Dialog
@@ -206,7 +417,8 @@ export function PropertiesManager({
             {editing ? "Редактировать объект" : "Новый объект"}
           </DialogTitle>
           <DialogDescription className="mb-6 mt-2 text-sm text-slate-500">
-            Эти данные используются при формировании договора.
+            Эти данные подставляются в новые договоры. Уже созданные договоры
+            сохраняют прежние данные.
           </DialogDescription>
           <form onSubmit={save} className="space-y-4">
             {[
@@ -262,7 +474,7 @@ export function PropertiesManager({
             </label>
             <div className="grid grid-cols-2 gap-4">
               <label>
-                <span className="label">Стоимость аренды, ₸</span>
+                <span className="label">Сумма аренды для договора, ₸</span>
                 <input
                   className="field"
                   type="number"
@@ -288,6 +500,13 @@ export function PropertiesManager({
                 />
               </label>
             </div>
+            {editing?.catalogSlug && (
+              <p className="text-xs leading-5 text-slate-500">
+                Сумма для договора хранится отдельно от цены в публичном
+                каталоге. Если она не указана, заполните её при оформлении
+                договора.
+              </p>
+            )}
             {error && (
               <p role="alert" className="error">
                 {error}

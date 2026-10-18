@@ -111,7 +111,7 @@ export function ContractsTable({
               </th>
               <th className="px-5 py-3 font-medium">Стоимость</th>
               <th className="px-5 py-3 font-medium">Статус</th>
-              <th className="px-5 py-3 font-medium">
+              <th className="relative px-5 py-3 font-medium">
                 <span className="sr-only">Действия</span>
               </th>
             </tr>

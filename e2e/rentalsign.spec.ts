@@ -21,7 +21,7 @@ test("admin -> property -> preview -> personal link -> mobile demo signing -> PD
   await dialog
     .getByLabel("Адрес", { exact: true })
     .fill("Вымышленный город, Тестовая улица, 2");
-  await dialog.getByLabel("Стоимость аренды, ₸").fill("30000");
+  await dialog.getByLabel("Сумма аренды для договора, ₸").fill("30000");
   await dialog.getByLabel("Депозит, ₸").fill("15000");
   await dialog.getByRole("button", { name: "Сохранить объект" }).click();
   await expect(page.getByRole("status")).toHaveText("Объект создан");
@@ -29,6 +29,11 @@ test("admin -> property -> preview -> personal link -> mobile demo signing -> PD
   await page
     .getByLabel("Объект недвижимости")
     .selectOption({ label: "ДЕМО • Мобильный сценарий" });
+  if (!(await page.getByLabel("ФИО или название организации").isVisible()))
+    await page
+      .locator("summary")
+      .filter({ hasText: "Реквизиты арендодателя" })
+      .click();
   await page
     .getByLabel("ФИО или название организации")
     .fill("ДЕМО • Арендодатель UI");

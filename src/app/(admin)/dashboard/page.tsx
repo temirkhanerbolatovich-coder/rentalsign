@@ -16,12 +16,17 @@ import { PageTitle } from "@/components/page-title";
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/demo-notice";
 import { ContractsTable } from "@/components/contracts-table";
+import { getContractTemplate } from "@/services/contract-template";
 export default async function Dashboard() {
   const admin = await requirePageAdmin();
-  const [contracts, propertyCount] = await Promise.all([
+  const [contracts, propertyCount, template] = await Promise.all([
     listContracts(admin.id),
     db.property.count({ where: { ownerId: admin.id, archived: false } }),
+    getContractTemplate(admin.id),
   ]);
+  const templateReady = Boolean(
+    template.landlordName && template.landlordPhone,
+  );
   const count = (status: string) =>
     contracts.filter((c) => c.effectiveStatus === status).length;
   const stats = [
@@ -69,6 +74,44 @@ export default async function Dashboard() {
           </Link>
         </Button>
       </PageTitle>
+      <div className="mb-7 grid gap-4 lg:grid-cols-2">
+        <Link
+          href="/properties"
+          className="card flex items-center gap-4 p-5 transition-colors hover:border-teal-300"
+        >
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700">
+            <Building2 size={22} />
+          </span>
+          <div className="min-w-0">
+            <p className="font-medium">Квартиры: {propertyCount}</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Выберите квартиру и нажмите «Создать договор».
+            </p>
+          </div>
+          <ArrowRight size={17} className="ml-auto shrink-0 text-teal-700" />
+        </Link>
+        <Link
+          href="/templates"
+          className="card flex items-center gap-4 p-5 transition-colors hover:border-teal-300"
+        >
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
+            <FilePenLine size={22} />
+          </span>
+          <div className="min-w-0">
+            <p className="font-medium">
+              {templateReady
+                ? "Шаблон договора подготовлен"
+                : "Подготовьте шаблон договора"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              {templateReady
+                ? "Реквизиты и условия подставляются в новые договоры."
+                : "Сохраните реквизиты арендодателя один раз."}
+            </p>
+          </div>
+          <ArrowRight size={17} className="ml-auto shrink-0 text-teal-700" />
+        </Link>
+      </div>
       <div className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-5">
         {stats.map(({ label, value, icon: Icon, style }) => (
           <div key={label} className="card p-5">
@@ -124,7 +167,7 @@ export default async function Dashboard() {
               {propertyCount} действующих объектов
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              Адреса и цены автоматически попадут в договор
+              Адрес подставится; итоговую сумму укажите за весь срок
             </p>
           </div>
           <ArrowRight size={17} className="ml-auto text-slate-400" />

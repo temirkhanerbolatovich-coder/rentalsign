@@ -2,13 +2,14 @@ import { spawn, execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 async function main() {
-  process.env.DATABASE_URL = "file:../tmp/e2e.db";
+  const testDatabase = `e2e-${randomBytes(8).toString("hex")}.db`;
+  process.env.DATABASE_URL = `file:../tmp/${testDatabase}`;
   process.env.APP_URL = "http://localhost:3100";
   process.env.TOKEN_ENCRYPTION_KEY = randomBytes(32).toString("hex");
   const password = process.env.E2E_PASSWORD;
   if (!password) throw new Error("E2E_PASSWORD required");
   mkdirSync("tmp", { recursive: true });
-  writeFileSync("tmp/e2e.db", "", { flag: "a" });
+  writeFileSync(`tmp/${testDatabase}`, "", { flag: "a" });
   execFileSync(
     process.execPath,
     ["node_modules/prisma/build/index.js", "migrate", "deploy"],

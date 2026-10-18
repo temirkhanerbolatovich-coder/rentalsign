@@ -37,6 +37,8 @@ export async function makeSnapshot(
   });
   if (!property)
     throw new AppError(400, "Выберите действующий объект недвижимости");
+  if (property.catalogSlug && input.rent <= 0)
+    throw new AppError(400, "Укажите согласованную стоимость аренды за весь срок");
   return {
     ...input,
     number,

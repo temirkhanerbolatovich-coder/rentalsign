@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,7 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/demo-notice";
 import { clientApi } from "@/components/client-api";
-export function LoginForm() {
+export function LoginForm({
+  destination = "/dashboard",
+  apartmentTitle,
+}: {
+  destination?: string;
+  apartmentTitle?: string;
+}) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
@@ -27,7 +34,7 @@ export function LoginForm() {
         email: form.get("email"),
         password: form.get("password"),
       });
-      router.push("/dashboard");
+      router.push(destination);
       router.refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -94,6 +101,19 @@ export function LoginForm() {
           <p className="mb-8 mt-3 text-sm text-slate-500">
             Войдите в пространство управления арендой.
           </p>
+          {apartmentTitle && (
+            <p className="mb-5 rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
+              Вход для владельца: подготовка договора на {apartmentTitle}.
+              Арендатор получает персональную ссылку от владельца без
+              регистрации.
+            </p>
+          )}
+          <Link
+            href="/apartments"
+            className="mb-6 inline-block text-sm text-teal-700 underline underline-offset-4"
+          >
+            Вернуться в каталог квартир
+          </Link>
           <form onSubmit={submit} className="space-y-5">
             <label className="block">
               <span className="label">Email администратора</span>

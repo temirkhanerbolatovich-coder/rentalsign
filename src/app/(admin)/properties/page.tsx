@@ -19,6 +19,7 @@ export default async function Properties() {
         rent: p.rent,
         deposit: p.deposit,
         archived: p.archived,
+        catalogSlug: p.catalogSlug,
       }))}
     />
   );

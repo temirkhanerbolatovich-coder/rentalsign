@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     template: "%s · RentalSign",
   },
   description:
-    "Локальный MVP оформления договоров аренды с демонстрационным подписанием. Настоящая ЭЦП не используется.",
+    "Каталог квартир с фотографиями и оформление договоров аренды с демонстрационным подписанием. Настоящая ЭЦП не используется.",
   robots: { index: false, follow: false },
 };
 export default function RootLayout({

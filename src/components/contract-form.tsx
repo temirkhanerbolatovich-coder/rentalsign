@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -16,42 +17,50 @@ import { DemoNotice } from "./demo-notice";
 import { PageTitle } from "./page-title";
 import { ContractDocument } from "./contract-document";
 import { clientApi } from "./client-api";
-import { defaultTerms, termLabels, money } from "@/domain/contracts";
+import { termLabels, money } from "@/domain/contracts";
+import {
+  getDefaultContractTemplate,
+  type ContractTemplate,
+} from "@/domain/contract-template";
+import { findApartment } from "@/catalog/apartments";
 import {
   contractSchema,
   type ContractInput,
   type ContractSnapshot,
   type PropertyInput,
 } from "@/validation/schemas";
-type FormProperty = PropertyInput & { id: string };
+type FormProperty = PropertyInput & { id: string; catalogSlug?: string | null };
 function localTime(value: string) {
   return new Date(new Date(value).getTime() + 5 * 3600000)
     .toISOString()
     .slice(0, 16);
 }
-const initial = (): ContractInput => ({
+const initial = (template: ContractTemplate): ContractInput => ({
+  ...template,
   propertyId: "",
-  landlordName: "",
-  landlordId: "",
-  landlordPhone: "",
   tenantName: "",
   tenantId: "",
   tenantPhone: "",
+  tenantDocument: "",
+  tenantAddress: "",
   checkIn: new Date(Date.now() + 86400000).toISOString(),
   checkOut: new Date(Date.now() + 2 * 86400000).toISOString(),
   rent: 0,
   deposit: 0,
-  additionalTerms: "",
-  ...defaultTerms,
 });
 export function ContractForm({
   properties,
   existing,
+  selectedPropertyId,
+  templateDefaults = getDefaultContractTemplate(),
 }: {
   properties: FormProperty[];
   existing?: { id: string; revision: number; snapshot: ContractSnapshot };
+  selectedPropertyId?: string;
+  templateDefaults?: ContractTemplate;
 }) {
   const router = useRouter();
+  const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
   const [data, setData] = useState<ContractInput>(
     existing?.snapshot
       ? contractSchema.parse(
@@ -61,12 +70,24 @@ export function ContractForm({
             ),
           ),
         )
-      : initial(),
+      : {
+          ...initial(templateDefaults),
+          propertyId: selectedPropertyId || "",
+          rent: selectedProperty?.rent || 0,
+          deposit: selectedProperty?.deposit || 0,
+        },
   );
   const [preview, setPreview] = useState(false);
+  const [landlordOpen] = useState(() => {
+    const landlord = existing?.snapshot ?? templateDefaults;
+    return !landlord.landlordName || !landlord.landlordPhone;
+  });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const property = properties.find((p) => p.id === data.propertyId);
+  const apartment = property?.catalogSlug
+    ? findApartment(property.catalogSlug)
+    : undefined;
   function update(key: keyof ContractInput, value: string | number) {
     setData((previous) => ({ ...previous, [key]: value }));
   }
@@ -78,6 +99,10 @@ export function ContractForm({
     }
     if (!property) {
       setError("Выберите объект недвижимости");
+      return false;
+    }
+    if (property.catalogSlug && data.rent <= 0) {
+      setError("Укажите согласованную стоимость аренды за весь срок");
       return false;
     }
     setError("");
@@ -118,7 +143,7 @@ export function ContractForm({
         </span>
         <input
           className="field"
-          value={data[key]}
+          value={data[key] ?? ""}
           onChange={(e) => update(key, e.target.value)}
           type={options.type || "text"}
           required={!options.optional}
@@ -147,7 +172,11 @@ export function ContractForm({
       </Link>
       <PageTitle
         title={existing ? "Редактировать черновик" : "Новый договор"}
-        description="Заполните данные, проверьте текст и сохраните черновик."
+        description={
+          existing
+            ? "Измените данные черновика и проверьте договор перед сохранением."
+            : "Выберите квартиру, заполните арендатора и срок. Реквизиты и условия уже подготовлены из шаблона."
+        }
       />
       <div className="mb-6">
         <DemoNotice compact />
@@ -161,7 +190,13 @@ export function ContractForm({
           .
         </p>
       )}
-      <form onSubmit={save}>
+      <form
+        onSubmit={save}
+        onInvalidCapture={(event) => {
+          const section = (event.target as HTMLElement).closest("details");
+          if (section) section.open = true;
+        }}
+      >
         <div className="grid items-start gap-6 xl:grid-cols-[1fr_290px]">
           <div className="space-y-5">
             {preview && snapshot ? (
@@ -200,9 +235,49 @@ export function ContractForm({
                     </select>
                   </label>
                   {property && (
-                    <p className="mb-5 text-xs text-slate-500">
-                      {property.address}
-                    </p>
+                    <div className="mb-5 flex gap-4 rounded-lg bg-slate-50 p-4">
+                      {apartment?.photos[0] && (
+                        <Image
+                          src={apartment.photos[0].src}
+                          alt={apartment.photos[0].alt}
+                          width={80}
+                          height={80}
+                          className="size-20 shrink-0 rounded-md object-cover"
+                        />
+                      )}
+                      <div className="self-center text-xs leading-5 text-slate-500">
+                        <p className="font-medium text-slate-900">
+                          {property.name}
+                        </p>
+                        <p>
+                          {property.address}
+                          {property.unit ? `, кв. ${property.unit}` : ""}
+                        </p>
+                        {apartment && (
+                          <p>
+                            Подъезд {apartment.entrance} · Этаж{" "}
+                            {apartment.floor}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {apartment && (
+                    <div className="mb-5 rounded-lg border border-teal-100 bg-teal-50 p-4 text-xs leading-5 text-teal-900">
+                      <Link
+                        href={`/apartments/${apartment.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium underline underline-offset-4"
+                      >
+                        Фото, цена и расположение квартиры
+                      </Link>
+                      <p className="mt-2">
+                        Согласуйте даты и итоговую сумму с арендатором. Тариф из
+                        каталога не переносится в стоимость всего договора
+                        автоматически.
+                      </p>
+                    </div>
                   )}
                   <div className="grid gap-5 sm:grid-cols-2">
                     {(["checkIn", "checkOut"] as const).map((key) => (
@@ -233,13 +308,13 @@ export function ContractForm({
                       <label key={key}>
                         <span className="label">
                           {key === "rent"
-                            ? "Стоимость аренды, ₸"
+                            ? "Аренда за весь срок, ₸"
                             : "Депозит, ₸"}
                         </span>
                         <input
                           className="field"
                           type="number"
-                          min={0}
+                          min={key === "rent" && property?.catalogSlug ? 1 : 0}
                           max={100000000}
                           step={1}
                           required
@@ -254,73 +329,135 @@ export function ContractForm({
                     указанный период.
                   </p>
                 </section>
-                {(["landlord", "tenant"] as const).map((party) => (
+                {(["tenant", "landlord"] as const).map((party) => (
                   <section key={party} className="card p-5 sm:p-7">
-                    <h2 className="mb-5 text-base font-semibold">
-                      {party === "landlord" ? "Арендодатель" : "Арендатор"}
-                    </h2>
-                    <div className="grid gap-5 sm:grid-cols-2">
-                      <div className="sm:col-span-2">
+                    <details open={party === "tenant" || landlordOpen}>
+                      <summary className="cursor-pointer text-base font-semibold">
+                        {party === "landlord"
+                          ? "Реквизиты арендодателя"
+                          : "Арендатор"}
+                        {party === "landlord" && data.landlordName && (
+                          <span className="ml-2 text-xs font-normal text-slate-500">
+                            {data.landlordName}
+                          </span>
+                        )}
+                      </summary>
+                      {party === "landlord" && (
+                        <p className="mt-3 text-xs leading-5 text-slate-500">
+                          {existing
+                            ? "Реквизиты сохранены в этом черновике."
+                            : "Данные взяты из шаблона."}{" "}
+                          Здесь их можно изменить только для этого договора.{" "}
+                          <Link
+                            href="/templates"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-teal-700 underline"
+                          >
+                            Настроить шаблон
+                          </Link>
+                        </p>
+                      )}
+                      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          {textField(
+                            `${party}Name`,
+                            party === "landlord"
+                              ? "ФИО или название организации"
+                              : "ФИО арендатора",
+                          )}
+                        </div>
+                        {textField(`${party}Phone`, "Контактный телефон", {
+                          max: 24,
+                          type: "tel",
+                        })}
                         {textField(
-                          `${party}Name`,
-                          party === "landlord"
-                            ? "ФИО или название организации"
-                            : "ФИО арендатора",
+                          `${party}Id`,
+                          party === "landlord" ? "ИИН / БИН" : "ИИН",
+                          { optional: true, max: 12 },
+                        )}
+                        {party === "tenant" ? (
+                          <>
+                            {textField(
+                              "tenantDocument",
+                              "Удостоверение личности / паспорт, №",
+                              { optional: true, max: 300 },
+                            )}
+                            {textField(
+                              "tenantAddress",
+                              "Адрес проживания арендатора",
+                              { optional: true, max: 500 },
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {textField(
+                              "landlordDocument",
+                              "Удостоверение личности, №",
+                              { optional: true, max: 200 },
+                            )}
+                            {textField(
+                              "landlordDocumentIssued",
+                              "Кем и когда выдано",
+                              { optional: true, max: 300 },
+                            )}
+                          </>
                         )}
                       </div>
-                      {textField(`${party}Phone`, "Контактный телефон", {
-                        max: 24,
-                        type: "tel",
-                      })}
-                      {textField(
-                        `${party}Id`,
-                        party === "landlord" ? "ИИН / БИН" : "ИИН",
-                        { optional: true, max: 12 },
-                      )}
-                    </div>
+                    </details>
                   </section>
                 ))}
                 <section className="card p-5 sm:p-7">
-                  <h2 className="mb-2 flex items-center gap-2 text-base font-semibold">
-                    <FileText size={18} className="text-teal-700" />
-                    Условия договора
-                  </h2>
-                  <p className="mb-5 text-xs leading-5 text-slate-500">
-                    Демонстрационный шаблон. Отредактируйте условия под свой
-                    сценарий; перед реальным применением нужна юридическая
-                    проверка.
-                  </p>
-                  <div className="space-y-5">
-                    {Object.entries(termLabels).map(([key, label]) => (
-                      <label key={key} className="block">
-                        <span className="label">{label}</span>
+                  <details>
+                    <summary className="cursor-pointer text-base font-semibold">
+                      <FileText
+                        size={18}
+                        className="mr-2 inline text-teal-700"
+                      />
+                      Условия договора
+                    </summary>
+                    <p className="mb-5 text-xs leading-5 text-slate-500">
+                      Условия уже заполнены. Любые изменения здесь относятся
+                      только к этому договору. Перед реальным применением нужна
+                      юридическая проверка.
+                    </p>
+                    <div className="space-y-5">
+                      {Object.entries(termLabels).map(([key, label]) => (
+                        <label key={key} className="block">
+                          <span className="label">{label}</span>
+                          <textarea
+                            className="field min-h-28"
+                            value={data[key as keyof typeof termLabels]}
+                            onChange={(e) =>
+                              update(
+                                key as keyof typeof termLabels,
+                                e.target.value,
+                              )
+                            }
+                            required
+                            maxLength={10000}
+                          />
+                        </label>
+                      ))}
+                      <label className="block">
+                        <span className="label">Дополнительные условия</span>
                         <textarea
-                          className="field min-h-28"
-                          value={data[key as keyof typeof termLabels]}
+                          className="field min-h-24"
+                          value={data.additionalTerms}
                           onChange={(e) =>
-                            update(
-                              key as keyof typeof termLabels,
-                              e.target.value,
-                            )
+                            update("additionalTerms", e.target.value)
                           }
-                          required
                           maxLength={10000}
+                          placeholder="Например, правила проживания и возврата ключей"
                         />
                       </label>
-                    ))}
-                    <label className="block">
-                      <span className="label">Дополнительные условия</span>
-                      <textarea
-                        className="field min-h-24"
-                        value={data.additionalTerms}
-                        onChange={(e) =>
-                          update("additionalTerms", e.target.value)
-                        }
-                        maxLength={10000}
-                        placeholder="Например, правила проживания и возврата ключей"
-                      />
-                    </label>
-                  </div>
+                    </div>
+                  </details>
+                  <p className="mt-3 text-xs leading-5 text-slate-500">
+                    Правила проживания и порядок передачи квартиры взяты из{" "}
+                    {existing ? "сохранённого черновика" : "вашего шаблона"}.
+                    Проверьте их в предварительном просмотре.
+                  </p>
                 </section>
               </>
             )}

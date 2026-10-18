@@ -53,6 +53,7 @@ export default async function Edit({
         description: p.description,
         rent: p.rent,
         deposit: p.deposit,
+        catalogSlug: p.catalogSlug,
       }))}
     />
   );

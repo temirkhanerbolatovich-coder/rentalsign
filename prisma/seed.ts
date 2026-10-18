@@ -15,8 +15,13 @@ async function main() {
   });
   if (!admin)
     throw new Error("Сначала создайте администратора и задайте ADMIN_EMAIL");
-  if (await db.contract.count({ where: { ownerId: admin.id } })) {
-    console.log("Договоры уже существуют: seed пропущен, данные сохранены");
+  if (
+    (await db.property.count({ where: { ownerId: admin.id } })) ||
+    (await db.contract.count({ where: { ownerId: admin.id } }))
+  ) {
+    console.log(
+      "Объекты или договоры уже существуют: seed пропущен, данные сохранены",
+    );
     return;
   }
   const properties = await Promise.all(

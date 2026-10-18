@@ -12,6 +12,10 @@ JSON, UTF-8. Административные методы требуют жив
 | POST   | `/api/auth/logout`             | Удалить сессию, сбросить cookie                             |
 | GET    | `/api/properties`              | Список своих объектов, включая архив                        |
 | POST   | `/api/properties`              | Создать объект                                              |
+| POST   | `/api/catalog/:slug/property` | Добавить публичную квартиру в свои объекты или вернуть существующий ID; сессия + Origin, без тела |
+| POST   | `/api/catalog/import`        | Добавить недостающие 7 квартир в свои объекты; `{imported,total}`, без очистки демоданных |
+| GET    | `/api/contract-template`     | Свои частные реквизиты и условия новых договоров |
+| PUT    | `/api/contract-template`     | Сохранить полный шаблон по строгой схеме; сессия + Origin + JSON |
 | PATCH  | `/api/properties/:id`          | Полная форма объекта **либо** `{archived:boolean}`          |
 | GET    | `/api/contracts`               | Свои договоры, effectiveStatus и события                    |
 | POST   | `/api/contracts`               | Сохранить черновик                                          |
@@ -29,6 +33,10 @@ JSON, UTF-8. Административные методы требуют жив
 PropertyInput: `name,address,type,unit,description,rent,deposit`. type: `APARTMENT`, `APARTMENTS`, `HOTEL`. Суммы: целые значения 0–100 000 000 тенге.
 
 ContractInput: `propertyId,landlordName,landlordId,landlordPhone,tenantName,tenantId,tenantPhone,checkIn,checkOut,rent,deposit,additionalTerms,obligations,payment,depositTerms,damage,handover`. ID сторон — пустая строка либо 12 цифр; это проверка формата, а не идентичности. Даты ISO 8601 с offset; checkOut > checkIn. Текст условий — до 10 000 символов на поле, суммарный лимит JSON сохраняется. Неизвестные ключи отклоняются.
+
+Дополнительные необязательные поля ContractInput: `landlordDocument` (до 200 символов), `landlordDocumentIssued` (до 300), `tenantDocument` (до 300), `tenantAddress` (до 500). Старые снимки без них поддерживаются. Шаблон содержит только поля `landlord*`, пять блоков условий и `additionalTerms`; квартиры, арендатора, даты и суммы он не принимает. Лимиты совпадают с формой; пустые реквизиты в шаблоне допустимы, в готовом договоре обязательные имя/телефон по-прежнему проверяются.
+
+Для `Property` с `catalogSlug` договор требует `rent > 0`: это согласованная общая сумма за весь период, а не тариф карточки. Импорт возвращает `{id}`; неизвестный slug — 404, собственный архивный объект — 409. Повторный импорт не обновляет существующий объект. `catalogSlug` устанавливается сервером и не принимается обычным PropertyInput. Публичные `/apartments` и `/apartments/:slug` используют отдельный статический перечень, доступ к `/api/properties` остаётся закрытым.
 
 ## Ответы
 

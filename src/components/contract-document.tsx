@@ -24,12 +24,24 @@ export function ContractDocument({
             <p className="mt-1 font-medium">{snapshot.landlordName}</p>
             <p>{snapshot.landlordPhone}</p>
             {snapshot.landlordId && <p>ИИН/БИН: {snapshot.landlordId}</p>}
+            {snapshot.landlordDocument && (
+              <p>Удостоверение личности: {snapshot.landlordDocument}</p>
+            )}
+            {snapshot.landlordDocumentIssued && (
+              <p>Кем и когда выдано: {snapshot.landlordDocumentIssued}</p>
+            )}
           </div>
           <div>
             <p className="text-xs text-slate-500">Арендатор</p>
             <p className="mt-1 font-medium">{snapshot.tenantName}</p>
             <p>{snapshot.tenantPhone}</p>
             {snapshot.tenantId && <p>ИИН: {snapshot.tenantId}</p>}
+            {snapshot.tenantDocument && (
+              <p>Удостоверение личности / паспорт: {snapshot.tenantDocument}</p>
+            )}
+            {snapshot.tenantAddress && (
+              <p>Адрес проживания: {snapshot.tenantAddress}</p>
+            )}
           </div>
         </div>
       </section>
@@ -55,7 +67,7 @@ export function ContractDocument({
             <p>{dateTime(snapshot.checkOut)}</p>
           </div>
           <div>
-            <span className="text-xs text-slate-500">Стоимость аренды</span>
+            <span className="text-xs text-slate-500">Аренда за весь срок</span>
             <p className="font-semibold">{money(snapshot.rent)}</p>
           </div>
           <div>
