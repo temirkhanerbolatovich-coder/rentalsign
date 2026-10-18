@@ -270,6 +270,12 @@ export function PropertiesManager({
                     {property.description}
                   </p>
                 )}
+                {apartment?.arrivalInstructions && (
+                  <p className="mt-3 rounded-lg border border-teal-100 bg-teal-50 p-3 text-xs leading-5 text-teal-900">
+                    <span className="font-semibold">Вход в подъезд: </span>
+                    {apartment.arrivalInstructions}
+                  </p>
+                )}
                 {apartment && (
                   <div className="mt-4 rounded-xl bg-slate-50 p-3">
                     <p className="text-xs text-slate-500">Цена в каталоге</p>

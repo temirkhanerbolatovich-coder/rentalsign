@@ -277,6 +277,11 @@ export function ContractForm({
                         каталога не переносится в стоимость всего договора
                         автоматически.
                       </p>
+                      {apartment.arrivalInstructions && (
+                        <p className="mt-2 font-medium">
+                          {apartment.arrivalInstructions}
+                        </p>
+                      )}
                     </div>
                   )}
                   <div className="grid gap-5 sm:grid-cols-2">

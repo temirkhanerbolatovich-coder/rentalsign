@@ -1,7 +1,7 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import type { PrismaClient } from "@prisma/client";
+import sharp from "sharp";
 import { apartments, findApartment } from "../src/catalog/apartments";
 import { defaultTerms } from "../src/domain/contracts";
 import type {
@@ -73,12 +74,12 @@ function contractInput(propertyId: string, rent: number): ContractInput {
   };
 }
 
-test("public catalog contains seven distinct apartments and all 79 local photos", () => {
+test("public catalog contains seven distinct apartments and all 90 local photos", () => {
   assert.equal(apartments.length, 7);
   assert.equal(new Set(apartments.map((apartment) => apartment.slug)).size, 7);
   const photos = apartments.flatMap((apartment) => apartment.photos);
-  assert.equal(photos.length, 79);
-  assert.equal(new Set(photos.map((photo) => photo.src)).size, 79);
+  assert.equal(photos.length, 90);
+  assert.equal(new Set(photos.map((photo) => photo.src)).size, 90);
   for (const apartment of apartments) {
     assert.equal(findApartment(apartment.slug), apartment);
     assert.ok(apartment.photos.length > 0);
@@ -107,13 +108,102 @@ test("public catalog contains seven distinct apartments and all 79 local photos"
   const incomplete = apartments.find((apartment) => apartment.unit === "69")!;
   assert.equal(incomplete.priceMin, null);
   assert.equal(incomplete.priceMax, null);
-  assert.equal(incomplete.mapUrl, null);
+  assert.equal(
+    incomplete.mapUrl,
+    "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
+  );
   assert.equal(findApartment("__proto__"), undefined);
   assert.equal(findApartment("not-a-real-apartment"), undefined);
 });
 
+test("corrected galleries stay attached to the owner's confirmed apartment addresses", () => {
+  const expected = [
+    {
+      slug: "mihaelisa-8-69",
+      address: "ул. Михаэлиса, 8",
+      unit: "69",
+      entrance: 4,
+      floor: 5,
+      photos: 8,
+      mapUrl:
+        "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
+      // The owner identified this dark sofa/window photo in the first screenshot.
+      coverSha256:
+        "4dbc9b0c0b5c00935078885aecbf2a184eb12163d44cb8b2987e99c8ec23e641",
+    },
+    {
+      slug: "mihaelisa-8-2-35",
+      address: "ул. Михаэлиса, 8/2",
+      unit: "35",
+      entrance: 2,
+      floor: 4,
+      photos: 21,
+      mapUrl:
+        "https://2gis.kz/ustkam/geo/12807747095497085/82.612469,49.966384",
+      coverSha256:
+        "48470cfee7806b3c8946b84eab8c2e520f83a9947c4dd56e584b56bf1c4ff394",
+    },
+    {
+      slug: "esenberlina-46-10",
+      address: "ул. Есенберлина, 46",
+      unit: "10",
+      entrance: 1,
+      floor: 4,
+      photos: 7,
+      mapUrl:
+        "https://2gis.kz/ustkam/geo/70030076308891814/82.614717,49.916413",
+      coverSha256:
+        "f4161e2d1354d188b21694258acb019e5c5ee85266c6304076e1bef425611ad7",
+    },
+    {
+      slug: "mihaelisa-7-240",
+      address: "ул. Михаэлиса, 7",
+      unit: "240",
+      entrance: 7,
+      floor: 6,
+      photos: 21,
+      mapUrl:
+        "https://2gis.kz/ustkam/geo/12807747095505295/82.608168,49.965321",
+      coverSha256:
+        "a4db43f818341c55fcd3292b9a45b1bd33fc1dca2d4cba964429c473ef3c7fd1",
+    },
+  ];
+  for (const fixture of expected) {
+    const apartment = findApartment(fixture.slug);
+    assert.ok(apartment);
+    for (const field of [
+      "address",
+      "unit",
+      "entrance",
+      "floor",
+      "mapUrl",
+    ] as const) {
+      assert.equal(
+        apartment[field],
+        fixture[field],
+        `${fixture.slug}: ${field}`,
+      );
+    }
+    assert.equal(apartment.photos.length, fixture.photos, fixture.slug);
+    if (fixture.coverSha256) {
+      const cover = readFileSync(
+        path.join(process.cwd(), "public", apartment.photos[0].src),
+      );
+      assert.equal(
+        createHash("sha256").update(cover).digest("hex"),
+        fixture.coverSha256,
+        `${fixture.slug}: wrong cover photo`,
+      );
+    }
+  }
+  assert.match(
+    findApartment("esenberlina-46-10")!.arrivalInstructions!,
+    /10.*видеодомофон|видеодомофон.*10/i,
+  );
+});
+
 test(
-  "published photo counts, prices and map links agree with supplied originals when available",
+  "address prices and map links agree with supplied originals when available",
   {
     skip: !existsSync(path.join(process.cwd(), "квартиры")),
   },
@@ -133,13 +223,14 @@ test(
       );
       const folderPath = path.join(sourceRoot, folder.name);
       const files = readdirSync(folderPath);
-      const photos = files.filter((filename) =>
-        /\.(jpe?g|png|webp)$/i.test(filename),
-      );
-      assert.equal(apartment.photos.length, photos.length);
       const notes = files.filter((filename) => /\.txt$/i.test(filename));
       if (notes.length === 0) {
-        assert.equal(apartment.mapUrl, null);
+        // The owner's later message supplies the missing map for Михаэлиса, 8.
+        assert.equal(apartment.unit, "69");
+        assert.equal(
+          apartment.mapUrl,
+          "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
+        );
         assert.equal(apartment.priceMin, null);
         assert.equal(apartment.priceMax, null);
         continue;
@@ -157,6 +248,47 @@ test(
       );
       assert.equal(apartment.priceMin, prices[0]);
       assert.equal(apartment.priceMax, prices.at(-1));
+    }
+  },
+);
+
+test(
+  "every corrected gallery contains the owner's confirmed source photos",
+  { skip: !existsSync(path.join(process.cwd(), "квартиры")) },
+  async () => {
+    // The old folder labels were wrong; the owner identified these sets by
+    // their visible cover photos, independently of the original folder names.
+    const sourceFolders = {
+      "esenberlina-46-10": "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира",
+      "mihaelisa-8-69": "Михаэлиса 82, 2 подъезд, 4 этаж, 35 квартира",
+      "mihaelisa-8-2-35": "Михаэлиса 8, 4 подъезд, 5 этаж, 69 квартира",
+      "mihaelisa-7-240":
+        "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира/Обновление 2026-10-18",
+    };
+    const sha256 = (bytes: Buffer) =>
+      createHash("sha256").update(bytes).digest("hex");
+    for (const [slug, sourceFolder] of Object.entries(sourceFolders)) {
+      const sourcePath = path.join(process.cwd(), "квартиры", sourceFolder);
+      const originals = readdirSync(sourcePath).filter((name) =>
+        /\.(jpe?g|png|webp)$/i.test(name),
+      );
+      const expectedHashes = [];
+      for (const filename of originals) {
+        const converted = await sharp(path.join(sourcePath, filename))
+          .rotate()
+          .resize({ width: 1600, withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
+        expectedHashes.push(sha256(converted));
+      }
+      const publishedHashes = findApartment(slug)!.photos.map((photo) =>
+        sha256(readFileSync(path.join(process.cwd(), "public", photo.src))),
+      );
+      assert.deepEqual(
+        publishedHashes.sort(),
+        expectedHashes.sort(),
+        `${slug}: gallery has missing or unrelated photos`,
+      );
     }
   },
 );

@@ -8,6 +8,7 @@ import {
   Images,
   Layers3,
   MapPin,
+  DoorOpen,
 } from "lucide-react";
 import { apartments, findApartment } from "@/catalog/apartments";
 import { ApartmentGallery } from "@/components/apartment-gallery";
@@ -120,6 +121,17 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
                   Посмотреть на карте 2ГИС <ArrowUpRight aria-hidden="true" />
                 </a>
               </Button>
+            )}
+            {apartment.arrivalInstructions && (
+              <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50 p-4">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-teal-900">
+                  <DoorOpen size={17} aria-hidden="true" /> Как попасть в
+                  подъезд
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-teal-900">
+                  {apartment.arrivalInstructions}
+                </p>
+              </div>
             )}
           </section>
         </div>

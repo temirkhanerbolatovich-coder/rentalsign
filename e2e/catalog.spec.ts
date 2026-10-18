@@ -140,6 +140,82 @@ test("mobile apartment gallery shows real images, full screen controls and the s
   await context.close();
 });
 
+test("corrected apartment details expose the confirmed addresses, photo sets and arrival instructions", async ({
+  page,
+}) => {
+  const confirmed = [
+    {
+      slug: "mihaelisa-8-69",
+      unit: "69",
+      entrance: 4,
+      floor: 5,
+      photos: 8,
+      map: "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
+    },
+    {
+      slug: "mihaelisa-8-2-35",
+      unit: "35",
+      entrance: 2,
+      floor: 4,
+      photos: 21,
+      map: "https://2gis.kz/ustkam/geo/12807747095497085/82.612469,49.966384",
+    },
+    {
+      slug: "esenberlina-46-10",
+      unit: "10",
+      entrance: 1,
+      floor: 4,
+      photos: 7,
+      map: "https://2gis.kz/ustkam/geo/70030076308891814/82.614717,49.916413",
+    },
+    {
+      slug: "mihaelisa-7-240",
+      unit: "240",
+      entrance: 7,
+      floor: 6,
+      photos: 21,
+      map: "https://2gis.kz/ustkam/geo/12807747095505295/82.608168,49.965321",
+    },
+  ];
+  for (const apartment of confirmed) {
+    await page.goto(`/apartments/${apartment.slug}`);
+    await expect(
+      page.getByText(`Квартира ${apartment.unit}`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`Подъезд ${apartment.entrance}`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`Этаж ${apartment.floor}`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`${apartment.photos} фото`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", {
+        name: "Открыть в 2ГИС (новая вкладка)",
+        exact: true,
+      }),
+    ).toHaveAttribute("href", apartment.map);
+    const cover = page
+      .getByRole("button", {
+        name: "Открыть фото 1 на весь экран",
+        exact: true,
+      })
+      .getByRole("img");
+    await expect
+      .poll(() =>
+        cover.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+      )
+      .toBeGreaterThan(0);
+    if (apartment.unit === "10") {
+      await expect(
+        page.getByText(/10.*видеодомофон|видеодомофон.*10/i),
+      ).toBeVisible();
+    }
+  }
+});
+
 test("owner handoff authenticates, imports once and requires an agreed period total", async ({
   page,
   request,
@@ -241,6 +317,17 @@ test("owner handoff authenticates, imports once and requires an agreed period to
       exact: true,
     }),
   ).toHaveCount(0);
+  expect(
+    (
+      await page.request.post("/api/catalog/import", {
+        headers: { Origin: origin },
+      })
+    ).ok(),
+  ).toBe(true);
+  await page.goto("/properties");
+  await expect(
+    page.getByText(/10.*видеодомофон|видеодомофон.*10/i),
+  ).toBeVisible();
 });
 
 test("untrusted apartment login parameter cannot redirect to an external site", async ({

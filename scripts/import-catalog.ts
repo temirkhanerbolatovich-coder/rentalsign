@@ -1,17 +1,20 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { lstat, mkdir, readFile, readdir, realpath, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 type ApartmentSource = {
   slug: string;
-  sourceFolder: string;
+  metadataFolder: string;
+  galleryFolder: string;
   sourceNote: string | null;
   coverFilename: string;
   title: string;
   address: string;
   residentialComplex: string | null;
   description: string | null;
+  arrivalInstructions: string | null;
   unit: string;
   entrance: number;
   floor: number;
@@ -21,18 +24,22 @@ type ApartmentSource = {
   mapUrl: string | null;
 };
 
-// Source folder names are retained here for reproducible imports, never in public data.
+// Metadata and gallery provenance are separate: the owner's 2026-10-18 corrections
+// reassign complete photo sets without changing the original address-based prices.
+// Original folder names are retained for reproducible imports, never in public data.
 // The owner confirmed the fractional addresses Базовая 2/6 and Михаэлиса 8/2.
 const sources: ApartmentSource[] = [
   {
     slug: "esenberlina-46-10",
-    sourceFolder: "Адрес Есенберлина 46, 1 подъезд, 4 этаж, 10 квартира",
+    metadataFolder: "Адрес Есенберлина 46, 1 подъезд, 4 этаж, 10 квартира",
+    galleryFolder: "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира",
     sourceNote: "2 ГИС.txt",
-    coverFilename: "WhatsApp Image 2026-10-17 at 16.13.14.jpeg",
+    coverFilename: "WhatsApp Image 2026-10-17 at 16.20.43.jpeg",
     title: "Квартира на Есенберлина, 46",
     address: "ул. Есенберлина, 46",
     residentialComplex: "Delux Town",
     description: null,
+    arrivalInstructions: "Когда подойдёте к подъезду, нажмите на квартиру 10: там видеодомофон.",
     unit: "10",
     entrance: 1,
     floor: 4,
@@ -43,13 +50,15 @@ const sources: ApartmentSource[] = [
   },
   {
     slug: "bazovaya-2-6-17",
-    sourceFolder: "Базовая 26, 1 подъезд, 6 этаж 17 квартира",
+    metadataFolder: "Базовая 26, 1 подъезд, 6 этаж 17 квартира",
+    galleryFolder: "Базовая 26, 1 подъезд, 6 этаж 17 квартира",
     sourceNote: "2ГИС.txt",
     coverFilename: "WhatsApp Image 2026-10-17 at 16.23.10.jpeg",
     title: "Квартира на Базовой, 2/6 · № 17",
     address: "ул. Базовая, 2/6",
     residentialComplex: null,
     description: null,
+    arrivalInstructions: null,
     unit: "17",
     entrance: 1,
     floor: 6,
@@ -60,13 +69,15 @@ const sources: ApartmentSource[] = [
   },
   {
     slug: "bazovaya-2-6-26",
-    sourceFolder: "Базовая 26, 1 подъезд, 8 этаж 26 квартира",
+    metadataFolder: "Базовая 26, 1 подъезд, 8 этаж 26 квартира",
+    galleryFolder: "Базовая 26, 1 подъезд, 8 этаж 26 квартира",
     sourceNote: "2 ГИС.txt",
     coverFilename: "WhatsApp Image 2026-10-17 at 16.12.16.jpeg",
     title: "Квартира на Базовой, 2/6 · № 26",
     address: "ул. Базовая, 2/6",
     residentialComplex: null,
     description: null,
+    arrivalInstructions: null,
     unit: "26",
     entrance: 1,
     floor: 8,
@@ -77,13 +88,15 @@ const sources: ApartmentSource[] = [
   },
   {
     slug: "novy-bereg-70",
-    sourceFolder: "Жилой комплекс Novy Bereg Базовая 4, 2 подъезд, 9 этаж, 70 квартира",
+    metadataFolder: "Жилой комплекс Novy Bereg Базовая 4, 2 подъезд, 9 этаж, 70 квартира",
+    galleryFolder: "Жилой комплекс Novy Bereg Базовая 4, 2 подъезд, 9 этаж, 70 квартира",
     sourceNote: "ссылка 2ГИС.txt",
     coverFilename: "WhatsApp Image 2026-10-17 at 16.12.15 (1).jpeg",
     title: "Квартира в ЖК Novy Bereg",
     address: "ул. Базовая, 4",
     residentialComplex: "Novy Bereg",
     description: null,
+    arrivalInstructions: null,
     unit: "70",
     entrance: 2,
     floor: 9,
@@ -94,13 +107,15 @@ const sources: ApartmentSource[] = [
   },
   {
     slug: "mihaelisa-7-240",
-    sourceFolder: "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира",
+    metadataFolder: "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира",
+    galleryFolder: "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира/Обновление 2026-10-18",
     sourceNote: "2ГИС.txt",
-    coverFilename: "WhatsApp Image 2026-10-17 at 16.20.43.jpeg",
+    coverFilename: "WhatsApp Image 2026-10-18 at 23.48.40 (2).jpeg",
     title: "Квартира на Михаэлиса, 7",
     address: "ул. Михаэлиса, 7",
     residentialComplex: null,
     description: null,
+    arrivalInstructions: null,
     unit: "240",
     entrance: 7,
     floor: 6,
@@ -111,30 +126,35 @@ const sources: ApartmentSource[] = [
   },
   {
     slug: "mihaelisa-8-69",
-    sourceFolder: "Михаэлиса 8, 4 подъезд, 5 этаж, 69 квартира",
+    metadataFolder: "Михаэлиса 8, 4 подъезд, 5 этаж, 69 квартира",
+    galleryFolder: "Михаэлиса 82, 2 подъезд, 4 этаж, 35 квартира",
     sourceNote: null,
-    coverFilename: "WhatsApp Image 2026-10-17 at 16.21.38 (1).jpeg",
+    coverFilename: "WhatsApp Image 2026-10-17 at 16.22.10.jpeg",
     title: "Квартира на Михаэлиса, 8",
     address: "ул. Михаэлиса, 8",
     residentialComplex: null,
     description: null,
+    arrivalInstructions: null,
     unit: "69",
     entrance: 4,
     floor: 5,
     priceMin: null,
     priceMax: null,
     pricingPeriod: "unconfirmed",
-    mapUrl: null,
+    // Supplied directly by the owner with the gallery corrections.
+    mapUrl: "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
   },
   {
     slug: "mihaelisa-8-2-35",
-    sourceFolder: "Михаэлиса 82, 2 подъезд, 4 этаж, 35 квартира",
+    metadataFolder: "Михаэлиса 82, 2 подъезд, 4 этаж, 35 квартира",
+    galleryFolder: "Михаэлиса 8, 4 подъезд, 5 этаж, 69 квартира",
     sourceNote: "2ГИС.txt",
-    coverFilename: "WhatsApp Image 2026-10-17 at 16.22.10.jpeg",
+    coverFilename: "WhatsApp Image 2026-10-17 at 16.21.38 (1).jpeg",
     title: "Квартира на Михаэлиса, 8/2",
     address: "ул. Михаэлиса, 8/2",
     residentialComplex: null,
     description: null,
+    arrivalInstructions: null,
     unit: "35",
     entrance: 2,
     floor: 4,
@@ -177,12 +197,15 @@ async function verifySourceNote(source: ApartmentSource, folder: string) {
 
 async function importCatalog() {
   const catalog = [];
+  const generatedFiles = new Map<string, Set<string>>();
   let photoCount = 0;
   let outputBytes = 0;
+  await mkdir(assetsRoot, { recursive: true });
+  const resolvedAssetsRoot = await realpath(assetsRoot);
 
   for (const source of sources) {
-    const folder = childPath(sourceRoot, source.sourceFolder);
-    await verifySourceNote(source, folder);
+    await verifySourceNote(source, childPath(sourceRoot, source.metadataFolder));
+    const folder = childPath(sourceRoot, source.galleryFolder);
     const filenames = (await readdir(folder))
       .filter((filename) => /\.(jpe?g|png|webp)$/i.test(filename))
       .sort((left, right) => left.localeCompare(right, "en", { numeric: true }));
@@ -193,23 +216,31 @@ async function importCatalog() {
     const orderedFilenames = [source.coverFilename, ...filenames.filter((name) => name !== source.coverFilename)];
     const destination = childPath(assetsRoot, source.slug);
     await mkdir(destination, { recursive: true });
+    // Re-check actual filesystem paths before writing or pruning generated assets.
+    childPath(resolvedAssetsRoot, path.relative(resolvedAssetsRoot, await realpath(destination)));
+    const outputNames = new Set<string>();
+    generatedFiles.set(destination, outputNames);
     const photos = [];
 
     for (const [index, filename] of orderedFilenames.entries()) {
-      const outputName = `${String(index + 1).padStart(2, "0")}.webp`;
       // rotate() applies camera orientation. Sharp strips EXIF/GPS metadata by default.
-      const output = await sharp(childPath(folder, filename))
+      const { data, info } = await sharp(childPath(folder, filename))
         .rotate()
         .resize({ width: 1600, withoutEnlargement: true })
         .webp({ quality: 82 })
-        .toFile(childPath(destination, outputName));
+        .toBuffer({ resolveWithObject: true });
+      // New bytes receive a new URL, including in the Next.js image cache.
+      const contentHash = createHash("sha256").update(data).digest("hex").slice(0, 12);
+      const outputName = `${String(index + 1).padStart(2, "0")}-${contentHash}.webp`;
+      await writeFile(childPath(destination, outputName), data);
+      outputNames.add(outputName);
       photos.push({
         src: `/apartments/${source.slug}/${outputName}`,
-        width: output.width,
-        height: output.height,
+        width: info.width,
+        height: info.height,
         alt: `Интерьер квартиры: ${source.address}, фото ${index + 1}`,
       });
-      outputBytes += output.size;
+      outputBytes += info.size;
     }
 
     catalog.push({
@@ -218,6 +249,7 @@ async function importCatalog() {
       address: source.address,
       residentialComplex: source.residentialComplex,
       description: source.description,
+      arrivalInstructions: source.arrivalInstructions,
       unit: source.unit,
       entrance: source.entrance,
       floor: source.floor,
@@ -232,10 +264,20 @@ async function importCatalog() {
   }
 
   const header = `// Generated by scripts/import-catalog.ts. Edit the source mapping and rerun the importer.\n\n`;
-  const types = `export type ApartmentPhoto = {\n  src: string;\n  width: number;\n  height: number;\n  alt: string;\n};\n\nexport type Apartment = {\n  slug: string;\n  title: string;\n  address: string;\n  residentialComplex: string | null;\n  description: string | null;\n  unit: string;\n  entrance: number;\n  floor: number;\n  priceMin: number | null;\n  priceMax: number | null;\n  pricingPeriod: "unconfirmed" | "day" | "month";\n  mapUrl: string | null;\n  photos: ApartmentPhoto[];\n};\n\n`;
+  const types = `export type ApartmentPhoto = {\n  src: string;\n  width: number;\n  height: number;\n  alt: string;\n};\n\nexport type Apartment = {\n  slug: string;\n  title: string;\n  address: string;\n  residentialComplex: string | null;\n  description: string | null;\n  arrivalInstructions: string | null;\n  unit: string;\n  entrance: number;\n  floor: number;\n  priceMin: number | null;\n  priceMax: number | null;\n  pricingPeriod: "unconfirmed" | "day" | "month";\n  mapUrl: string | null;\n  photos: ApartmentPhoto[];\n};\n\n`;
   const lookup = `\n\nexport function findApartment(slug: string): Apartment | undefined {\n  return apartments.find((apartment) => apartment.slug === slug);\n}\n`;
   await mkdir(path.dirname(dataPath), { recursive: true });
   await writeFile(dataPath, `${header}${types}export const apartments: Apartment[] = ${JSON.stringify(catalog, null, 2)};${lookup}`, "utf8");
+  // Only generated WebP files are pruned, after every new asset and data file exists.
+  // Source photographs and unrelated files are never removed.
+  for (const [destination, outputNames] of generatedFiles) {
+    for (const filename of await readdir(destination)) {
+      if (!/^\d{2}(?:-[a-f0-9]{12})?\.webp$/.test(filename) || outputNames.has(filename)) continue;
+      const obsoletePath = childPath(destination, filename);
+      if (!(await lstat(obsoletePath)).isFile()) continue;
+      await unlink(obsoletePath);
+    }
+  }
   console.log(`Imported ${catalog.length} apartments, ${photoCount} photos, ${(outputBytes / 1024 / 1024).toFixed(2)} MiB. Originals preserved.`);
 }
 
