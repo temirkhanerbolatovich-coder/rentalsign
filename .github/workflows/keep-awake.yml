@@ -1,0 +1,13 @@
+name: Keep RentalSign awake
+on:
+  schedule:
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Request health endpoint
+        run: curl --fail --silent --show-error --max-time 90 --retry 2 --retry-delay 5 https://rentalsign.onrender.com/api/health
