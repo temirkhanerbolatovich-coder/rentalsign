@@ -1,13 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Plus,
-  FileText,
-  Clock3,
-  CheckCheck,
-  FilePenLine,
-  Link2Off,
   ArrowRight,
-  Building2,
 } from "lucide-react";
 import { requirePageAdmin } from "@/auth/session";
 import { listContracts } from "@/repositories/contracts";
@@ -17,12 +12,14 @@ import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/demo-notice";
 import { ContractsTable } from "@/components/contracts-table";
 import { getContractTemplate } from "@/services/contract-template";
+import { findApartment } from "@/catalog/apartments";
 export default async function Dashboard() {
   const admin = await requirePageAdmin();
-  const [contracts, propertyCount, template] = await Promise.all([
+  const [contracts, propertyCount, template, linkedProperties] = await Promise.all([
     listContracts(admin.id),
     db.property.count({ where: { ownerId: admin.id, archived: false } }),
     getContractTemplate(admin.id),
+    db.property.findMany({ where: { ownerId: admin.id, archived: false, catalogSlug: { not: null } }, select: { id: true, name: true, address: true, catalogSlug: true }, take: 3, orderBy: { createdAt: "desc" } }),
   ]);
   const templateReady = Boolean(
     template.landlordName && template.landlordPhone,
@@ -33,38 +30,28 @@ export default async function Dashboard() {
     {
       label: "Всего договоров",
       value: contracts.length,
-      icon: FileText,
-      style: "bg-slate-100 text-slate-600",
     },
     {
       label: "Черновики",
       value: count("DRAFT"),
-      icon: FilePenLine,
-      style: "bg-blue-50 text-blue-600",
     },
     {
       label: "Ожидают подписания",
       value: count("PENDING"),
-      icon: Clock3,
-      style: "bg-amber-50 text-amber-600",
     },
     {
       label: "Подписаны в демо",
       value: count("DEMO_SIGNED"),
-      icon: CheckCheck,
-      style: "bg-teal-50 text-teal-700",
     },
     {
       label: "Истекшие ссылки",
       value: count("EXPIRED"),
-      icon: Link2Off,
-      style: "bg-orange-50 text-orange-600",
     },
   ];
   return (
     <>
       <PageTitle
-        title="Всё под контролем"
+        title="Рабочий обзор"
         description="Ваши объекты, договоры и действия арендаторов в одном месте."
       >
         <Button asChild>
@@ -79,9 +66,6 @@ export default async function Dashboard() {
           href="/properties"
           className="card flex items-center gap-4 p-5 transition-colors hover:border-teal-300"
         >
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700">
-            <Building2 size={22} />
-          </span>
           <div className="min-w-0">
             <p className="font-medium">Квартиры: {propertyCount}</p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
@@ -94,9 +78,6 @@ export default async function Dashboard() {
           href="/templates"
           className="card flex items-center gap-4 p-5 transition-colors hover:border-teal-300"
         >
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
-            <FilePenLine size={22} />
-          </span>
           <div className="min-w-0">
             <p className="font-medium">
               {templateReady
@@ -113,18 +94,31 @@ export default async function Dashboard() {
         </Link>
       </div>
       <div className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        {stats.map(({ label, value, icon: Icon, style }) => (
+        {stats.map(({ label, value }) => (
           <div key={label} className="card p-5">
-            <div
-              className={`mb-5 grid size-9 place-items-center rounded-lg ${style}`}
-            >
-              <Icon size={18} />
-            </div>
-            <p className="text-3xl font-semibold tracking-tight">{value}</p>
-            <p className="mt-2 text-xs leading-5 text-slate-500">{label}</p>
+            <p className="text-xs font-medium leading-5 text-slate-600">{label}</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight">{value}</p>
           </div>
         ))}
       </div>
+      {linkedProperties.length > 0 && (
+        <section className="card mb-7 p-5" aria-labelledby="dashboard-properties-title">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div><p className="eyebrow">ОБЪЕКТЫ</p><h2 id="dashboard-properties-title" className="mt-1 text-lg font-semibold">Квартиры из каталога</h2><p className="mt-1 text-xs text-slate-600">Ваши активные объекты, связанные с публичным каталогом.</p></div>
+            <Link href="/properties" className="inline-flex min-h-11 items-center text-sm font-medium text-blue-800 hover:underline">Все объекты</Link>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-3">
+            {linkedProperties.map((property) => {
+              const apartment = property.catalogSlug ? findApartment(property.catalogSlug) : null;
+              const photo = apartment?.photos[0];
+              return <Link href="/properties" key={property.id} className="flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 p-2 hover:bg-slate-50">
+                {photo ? <Image src={photo.src} alt="" width={72} height={64} className="h-16 w-[72px] shrink-0 rounded-md object-cover" /> : <span className="grid h-16 w-[72px] shrink-0 place-items-center rounded-md bg-slate-100 text-xs text-slate-600">Нет фото</span>}
+                <span className="min-w-0"><span className="block break-words text-sm font-medium text-slate-900">{property.name}</span><span className="mt-1 block break-words text-xs text-slate-600">{property.address}</span></span>
+              </Link>;
+            })}
+          </div>
+        </section>
+      )}
       <div className="mb-8">
         <DemoNotice compact />
       </div>
@@ -159,9 +153,6 @@ export default async function Dashboard() {
           href="/properties"
           className="card flex items-center gap-4 p-5 hover:border-teal-300"
         >
-          <span className="grid size-11 place-items-center rounded-xl bg-teal-50 text-teal-700">
-            <Building2 size={22} />
-          </span>
           <div>
             <p className="text-sm font-medium">
               {propertyCount} действующих объектов
@@ -173,9 +164,6 @@ export default async function Dashboard() {
           <ArrowRight size={17} className="ml-auto text-slate-400" />
         </Link>
         <div className="card flex items-center gap-4 p-5">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-50 text-slate-500">
-            <FileText size={22} />
-          </span>
           <div>
             <p className="text-sm font-medium">
               Создать → отправить → проверить

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description:
     "Каталог квартир с фотографиями и оформление договоров аренды с демонстрационным подписанием. Настоящая ЭЦП не используется.",
   robots: { index: false, follow: false },
+  icons: { icon: "/brand/rentalsign-house-document.png" },
 };
 export default function RootLayout({
   children,

@@ -1,4 +1,5 @@
-import { PenLine, Link2Off } from "lucide-react";
+import { Link2Off } from "lucide-react";
+import { Brand } from "@/components/brand";
 import { publicContract } from "@/services/contracts";
 import { publicRateLimit } from "@/lib/rate-limit";
 import { AppError } from "@/lib/errors";
@@ -24,8 +25,7 @@ export default async function Sign({
       <main className="grid min-h-dvh place-items-center p-6">
         <div className="card w-full max-w-md p-8 text-center">
           <div className="mb-10 flex items-center justify-center gap-2 font-semibold">
-            <PenLine className="text-teal-700" size={20} />
-            RentalSign.
+            <Brand />
           </div>
           <Link2Off className="mx-auto mb-5 text-slate-400" size={40} />
           <h1 className="text-xl font-semibold">

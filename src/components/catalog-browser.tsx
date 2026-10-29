@@ -1,15 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import type { Apartment } from "@/catalog/apartments";
 import { ApartmentCard } from "@/components/apartment-card";
 import { Button } from "@/components/ui/button";
 
+const FILTER_STORAGE_KEY = "rentalsign.catalog.filters";
+const FILTER_CHANGE_EVENT = "rentalsign.catalog.filters.changed";
+type CatalogFilters = { search: string; maxPrice: string; sort: string };
+let volatileFilters = "";
+let storageUnavailable = false;
+
+function subscribeToFilters(onChange: () => void) {
+  window.addEventListener(FILTER_CHANGE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(FILTER_CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+function readFilters() {
+  try {
+    return storageUnavailable ? volatileFilters : sessionStorage.getItem(FILTER_STORAGE_KEY) ?? "";
+  } catch {
+    storageUnavailable = true;
+    return volatileFilters;
+  }
+}
+
+function saveFilters(filters: CatalogFilters) {
+  volatileFilters = JSON.stringify(filters);
+  try {
+    sessionStorage.setItem(FILTER_STORAGE_KEY, volatileFilters);
+  } catch {
+    storageUnavailable = true;
+  }
+  window.dispatchEvent(new Event(FILTER_CHANGE_EVENT));
+}
+
 export function CatalogBrowser({ apartments }: { apartments: Apartment[] }) {
-  const [search, setSearch] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [sort, setSort] = useState("default");
+  const stored = useSyncExternalStore(subscribeToFilters, readFilters, () => "");
+  let filters: CatalogFilters = { search: "", maxPrice: "", sort: "default" };
+  try {
+    const saved = JSON.parse(stored || "null");
+    if (saved && typeof saved === "object") filters = {
+      search: typeof saved.search === "string" ? saved.search : "",
+      maxPrice: typeof saved.maxPrice === "string" ? saved.maxPrice : "",
+      sort: ["default", "price-asc", "price-desc"].includes(saved.sort) ? saved.sort : "default",
+    };
+  } catch {
+    // Invalid stored filters fall back to the default view.
+  }
+  const { search, maxPrice, sort } = filters;
   const normalizedSearch = search.trim().toLocaleLowerCase("ru");
   const priceLimit = maxPrice.trim() ? Number(maxPrice) : null;
   const hasFilters = Boolean(search || maxPrice || sort !== "default");
@@ -41,9 +84,7 @@ export function CatalogBrowser({ apartments }: { apartments: Apartment[] }) {
     });
 
   function resetFilters() {
-    setSearch("");
-    setMaxPrice("");
-    setSort("default");
+    saveFilters({ search: "", maxPrice: "", sort: "default" });
   }
 
   return (
@@ -67,7 +108,7 @@ export function CatalogBrowser({ apartments }: { apartments: Apartment[] }) {
                 id="apartment-search"
                 type="search"
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => saveFilters({ search: event.target.value, maxPrice, sort })}
                 placeholder="Улица, дом или жилой комплекс"
                 className="field pl-10"
               />
@@ -84,7 +125,7 @@ export function CatalogBrowser({ apartments }: { apartments: Apartment[] }) {
               min="0"
               step="1000"
               value={maxPrice}
-              onChange={(event) => setMaxPrice(event.target.value)}
+              onChange={(event) => saveFilters({ search, maxPrice: event.target.value, sort })}
               placeholder="Без ограничения"
               aria-describedby="apartment-budget-help"
               className="field"
@@ -97,7 +138,7 @@ export function CatalogBrowser({ apartments }: { apartments: Apartment[] }) {
             <select
               id="apartment-sort"
               value={sort}
-              onChange={(event) => setSort(event.target.value)}
+              onChange={(event) => saveFilters({ search, maxPrice, sort: event.target.value })}
               className="field"
             >
               <option value="default">По порядку в каталоге</option>
@@ -116,13 +157,14 @@ export function CatalogBrowser({ apartments }: { apartments: Apartment[] }) {
       </section>
 
       <div className="flex min-h-16 items-center justify-between gap-3 py-4">
-        <p role="status" className="text-sm text-slate-600">
+        <div><p role="status" className="text-sm text-slate-600">
           Показано{" "}
           <strong className="font-semibold text-slate-900">
             {filtered.length}
           </strong>{" "}
           из {apartments.length}
         </p>
+        {hasFilters && <p className="mt-1 text-xs text-slate-600">{[search.trim() && `Поиск: ${search.trim()}`, maxPrice && `Цена до ${maxPrice} ₸`, sort !== "default" && (sort === "price-asc" ? "Сначала дешевле" : "Сначала дороже")].filter(Boolean).join(" · ")}</p>}</div>
         {hasFilters && filtered.length > 0 && (
           <Button variant="ghost" size="sm" onClick={resetFilters}>
             <X aria-hidden="true" /> Сбросить фильтры

@@ -1,5 +1,5 @@
 import { test, expect, devices } from "@playwright/test";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 test("admin -> property -> preview -> personal link -> mobile demo signing -> PDF -> admin status", async ({
   page,
   browser,
@@ -111,6 +111,12 @@ test("admin -> property -> preview -> personal link -> mobile demo signing -> PD
       exact: true,
     }),
   ).toHaveCount(0);
+  const [download] = await Promise.all([
+    mobile.waitForEvent("download"),
+    mobile.getByRole("link", { name: "Скачать итоговый демо PDF" }).click(),
+  ]);
+  await download.saveAs("output/pdf/mobile-browser-demo.pdf");
+  expect(readFileSync("output/pdf/mobile-browser-demo.pdf").subarray(0, 5).toString()).toBe("%PDF-");
   await mobile.screenshot({
     path: "output/screenshots/signed-iphone.png",
     fullPage: true,
@@ -161,6 +167,14 @@ test("admin -> property -> preview -> personal link -> mobile demo signing -> PD
     headers: { Origin: "http://localhost:3100" },
   });
   expect(locked.status()).toBe(409);
+  for (const width of [320, 768, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/contracts");
+    const row = page.getByRole("row").filter({ hasText: "ДЕМО • Арендатор UI" });
+    await expect(row).toContainText("ДЕМО • Мобильный сценарий");
+    await expect(row.getByRole("link", { name: /Скачать PDF/ })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `contracts at ${width}px`).toBe(true);
+  }
   await page.goto("/dashboard");
   await page.screenshot({
     path: "output/screenshots/dashboard.png",

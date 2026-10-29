@@ -1,18 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CheckCheck,
-  Download,
-  PenLine,
-  LockKeyhole,
-  Check,
-} from "lucide-react";
+import { CheckCheck, Download, LockKeyhole, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import { ConfirmAction } from "./confirm-action";
 import { DemoNotice } from "./demo-notice";
 import { ContractDocument } from "./contract-document";
 import { clientApi } from "./client-api";
+import { Brand } from "./brand";
 import { dateTime } from "@/domain/contracts";
 import type { ContractSnapshot } from "@/validation/schemas";
 export function SigningClient({
@@ -33,12 +28,11 @@ export function SigningClient({
     router.refresh();
   }
   return (
-    <main className="min-h-dvh bg-[#f3f6f5]">
+    <main className="min-h-dvh bg-[#f5f6f8]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-5">
           <div className="flex items-center gap-2 font-semibold">
-            <PenLine size={20} className="text-teal-700" />
-            RentalSign.
+            <Brand />
           </div>
           <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
             <LockKeyhole size={13} />

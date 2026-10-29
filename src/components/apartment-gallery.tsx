@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import type { ApartmentPhoto } from "@/catalog/apartments";
 import {
@@ -23,6 +23,8 @@ export function ApartmentGallery({
 }) {
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
+  const [failedPhotos, setFailedPhotos] = useState<string[]>([]);
+  const touchStart = useRef<number | null>(null);
   const photo = photos[index];
 
   function movePhoto(offset: number) {
@@ -37,11 +39,24 @@ export function ApartmentGallery({
     }
   }
 
+  function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    touchStart.current = event.changedTouches[0]?.clientX ?? null;
+  }
+  function handleTouchEnd(event: TouchEvent<HTMLElement>) {
+    if (touchStart.current === null) return;
+    const distance = (event.changedTouches[0]?.clientX ?? touchStart.current) - touchStart.current;
+    touchStart.current = null;
+    if (Math.abs(distance) > 50 && photos.length > 1) movePhoto(distance < 0 ? 1 : -1);
+  }
+  function markFailed(src: string) {
+    setFailedPhotos((current) => current.includes(src) ? current : [...current, src]);
+  }
+
   if (!photo) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <section aria-label="Фотографии квартиры" onKeyDown={handleArrowKeys}>
+      <section aria-label="Фотографии квартиры" onKeyDown={handleArrowKeys} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
           <DialogTrigger asChild>
             <button
@@ -49,14 +64,15 @@ export function ApartmentGallery({
               className="relative block aspect-[4/3] w-full focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-teal-700"
               aria-label={`Открыть фото ${index + 1} на весь экран`}
             >
-              <Image
+              {failedPhotos.includes(photo.src) ? <span className="grid h-full place-items-center text-sm text-slate-600">Не удалось загрузить фотографию</span> : <Image
                 src={photo.src}
                 alt={photo.alt}
                 fill
                 sizes="(max-width: 1023px) 100vw, 65vw"
                 preload={index === 0}
+                onError={() => markFailed(photo.src)}
                 className="object-contain"
-              />
+              />}
               <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-800 shadow-sm">
                 <Expand size={15} aria-hidden="true" /> На весь экран
               </span>
@@ -129,6 +145,8 @@ export function ApartmentGallery({
       <DialogContent
         className="max-w-6xl p-4 sm:p-5"
         onKeyDown={handleArrowKeys}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <DialogTitle className="pr-9 text-base font-semibold text-slate-900">
           Фотографии квартиры
@@ -137,13 +155,14 @@ export function ApartmentGallery({
           {address}. Стрелки ← → переключают фотографии, Esc закрывает просмотр.
         </DialogDescription>
         <div className="relative h-[58dvh] rounded-lg bg-slate-950 sm:h-[64dvh]">
-          <Image
+          {failedPhotos.includes(photo.src) ? <p className="grid h-full place-items-center text-sm text-white">Не удалось загрузить фотографию</p> : <Image
             src={photo.src}
             alt={photo.alt}
             fill
             sizes="95vw"
+            onError={() => markFailed(photo.src)}
             className="object-contain"
-          />
+          />}
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">
           <Button

@@ -4,16 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  PenLine,
   Check,
   LockKeyhole,
-  FileText,
-  Send,
-  CheckCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/demo-notice";
 import { clientApi } from "@/components/client-api";
+import { Brand } from "@/components/brand";
 export function LoginForm({
   destination = "/dashboard",
   apartmentTitle,
@@ -44,38 +41,34 @@ export function LoginForm({
   }
   return (
     <main className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      <section className="relative hidden flex-col justify-between overflow-hidden bg-[#142d36] p-14 text-white lg:flex">
+      <section className="relative hidden flex-col justify-between overflow-hidden border-r border-slate-200 bg-white p-14 text-slate-900 lg:flex">
         <div className="flex items-center gap-3 text-2xl font-semibold">
-          <span className="rounded-xl bg-teal-400/15 p-2 text-teal-300">
-            <PenLine size={24} />
-          </span>
-          RentalSign<span className="-ml-3 text-teal-300">.</span>
+          <Brand />
         </div>
         <div className="relative max-w-xl">
-          <p className="mb-6 text-xs tracking-[0.18em] text-teal-300">
+          <p className="mb-6 text-xs tracking-[0.18em] text-amber-800">
             АРЕНДА НАЧИНАЕТСЯ С ДОГОВОРА
           </p>
           <h1 className="text-5xl font-semibold leading-[1.15] tracking-tight">
             Меньше бумаги.
             <br />
-            <span className="text-teal-200">Больше порядка.</span>
+            <span className="text-blue-800">Больше порядка.</span>
           </h1>
-          <p className="mt-7 max-w-md text-base leading-7 text-slate-300">
+          <p className="mt-7 max-w-md text-base leading-7 text-slate-600">
             Оформляйте договоры аренды, отправляйте персональные ссылки и
             следите за каждым этапом.
           </p>
           <div className="mt-12 grid grid-cols-3 gap-4">
             {[
-              { icon: FileText, label: "Создайте договор" },
-              { icon: Send, label: "Отправьте ссылку" },
-              { icon: CheckCheck, label: "Получите результат" },
-            ].map(({ icon: Icon, label }, i) => (
+              "Создайте договор",
+              "Отправьте ссылку",
+              "Получите результат",
+            ].map((label, i) => (
               <div
                 key={label}
-                className="rounded-xl border border-white/10 bg-white/5 p-4"
+                className="rounded-xl border border-slate-200 bg-slate-50 p-4"
               >
-                <Icon className="mb-5 text-teal-300" size={23} />
-                <p className="mb-1 text-[10px] text-slate-400">0{i + 1}</p>
+                <p className="mb-3 text-xs font-semibold text-amber-800">0{i + 1}</p>
                 <p className="text-xs">{label}</p>
               </div>
             ))}
@@ -84,15 +77,13 @@ export function LoginForm({
         <p className="text-xs text-slate-400">
           Демонстрационный MVP · Сделано для понятной аренды
         </p>
-        <div className="pointer-events-none absolute -right-40 -top-40 size-[550px] rounded-full border border-white/5" />
       </section>
       <section className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           <div className="mb-12 flex items-center gap-2 text-xl font-semibold lg:hidden">
-            <PenLine className="text-teal-700" />
-            RentalSign.
+            <Brand />
           </div>
-          <div className="mb-6 grid size-12 place-items-center rounded-xl border border-teal-100 bg-teal-50 text-teal-700">
+          <div className="mb-6 grid size-12 place-items-center rounded-xl border border-amber-200 bg-amber-50 text-amber-900">
             <LockKeyhole size={23} />
           </div>
           <h2 className="text-3xl font-semibold tracking-tight">
@@ -102,7 +93,7 @@ export function LoginForm({
             Войдите в пространство управления арендой.
           </p>
           {apartmentTitle && (
-            <p className="mb-5 rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
+            <p className="mb-5 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">
               Вход для владельца: подготовка договора на {apartmentTitle}.
               Арендатор получает персональную ссылку от владельца без
               регистрации.
@@ -110,7 +101,7 @@ export function LoginForm({
           )}
           <Link
             href="/apartments"
-            className="mb-6 inline-block text-sm text-teal-700 underline underline-offset-4"
+            className="mb-6 inline-block text-sm text-blue-800 underline underline-offset-4"
           >
             Вернуться в каталог квартир
           </Link>

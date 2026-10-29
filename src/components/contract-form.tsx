@@ -181,6 +181,11 @@ export function ContractForm({
       <div className="mb-6">
         <DemoNotice compact />
       </div>
+      <ol aria-label="Порядок подготовки договора" className="mb-6 flex flex-wrap gap-2 text-xs text-slate-700">
+        {["Объект и срок", "Стороны", "Условия и сумма", "Проверка", "Сохранение"].map((step, index) => (
+          <li key={step} className="rounded-full border border-slate-200 bg-white px-3 py-2"><span className="mr-1 font-semibold text-amber-800">{index + 1}.</span> {step}</li>
+        ))}
+      </ol>
       {!properties.length && (
         <p className="error mb-5">
           Для создания договора{" "}

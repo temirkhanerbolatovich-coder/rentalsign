@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowUpRight, PenLine } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { Brand } from "@/components/brand";
 
 export default function ApartmentsLayout({
   children,
@@ -14,30 +15,27 @@ export default function ApartmentsLayout({
       >
         Перейти к содержимому
       </a>
-      <header className="border-b border-white/10 bg-[#142d36] text-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-5 sm:px-8">
+      <header className="border-b border-slate-200 bg-white text-slate-900">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-8">
           <Link
             href="/"
             className="flex items-center gap-2.5"
             aria-label="RentalSign — главная"
           >
-            <span className="grid size-9 place-items-center rounded-xl bg-teal-400/15 text-teal-300">
-              <PenLine size={20} aria-hidden="true" />
-            </span>
-            <span className="text-xl font-semibold tracking-tight">
-              RentalSign<span className="text-teal-300">.</span>
+            <span className="text-xl">
+              <Brand />
             </span>
           </Link>
           <nav
             aria-label="Главная навигация"
-            className="flex items-center gap-5 text-sm sm:gap-8"
+            className="flex flex-wrap items-center gap-x-4 text-sm sm:gap-8"
           >
-            <Link href="/apartments" className="text-white hover:text-teal-200">
+            <Link href="/apartments" className="inline-flex min-h-11 items-center text-slate-700 hover:text-blue-700">
               Каталог квартир
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white"
+              className="inline-flex min-h-11 items-center gap-1.5 font-medium text-blue-800 hover:underline"
             >
               Вход для владельца <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
@@ -46,7 +44,7 @@ export default function ApartmentsLayout({
       </header>
       <main
         id="catalog-content"
-        className="mx-auto w-full max-w-7xl flex-1 px-5 pb-16 pt-9 sm:px-8 sm:pt-12"
+        className="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-6 sm:px-8 sm:pt-9"
       >
         {children}
       </main>

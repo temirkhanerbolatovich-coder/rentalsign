@@ -98,15 +98,15 @@ export function ContractsTable({
           {error}
         </p>
       )}
-      <div className="overflow-x-auto">
+      <div>
         <table className="w-full text-left text-sm">
-          <thead>
+          <thead className="hidden lg:table-header-group">
             <tr className="border-b border-slate-100 bg-slate-50/70 text-[11px] uppercase tracking-wide text-slate-500">
               <th className="px-5 py-3 font-medium">Договор / арендатор</th>
-              <th className="hidden px-5 py-3 font-medium lg:table-cell">
+              <th className="px-5 py-3 font-medium">
                 Объект
               </th>
-              <th className="hidden px-5 py-3 font-medium xl:table-cell">
+              <th className="hidden px-5 py-3 font-medium lg:table-cell">
                 Создан
               </th>
               <th className="px-5 py-3 font-medium">Стоимость</th>
@@ -120,9 +120,9 @@ export function ContractsTable({
             {filtered.map((row) => (
               <tr
                 key={row.id}
-                className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/60"
+                className="block border-b border-slate-100 px-4 py-4 last:border-b-0 hover:bg-slate-50/60 lg:table-row lg:p-0"
               >
-                <td className="px-5 py-5">
+                <td className="block py-1 lg:table-cell lg:px-5 lg:py-5">
                   <Link
                     href={`/contracts/${row.id}`}
                     className="font-medium text-slate-900 hover:text-teal-700"
@@ -133,20 +133,23 @@ export function ContractsTable({
                     {row.number}
                   </p>
                 </td>
-                <td className="hidden max-w-52 px-5 py-5 text-slate-500 lg:table-cell">
+                <td className="block break-words py-1 text-slate-600 lg:table-cell lg:max-w-52 lg:px-5 lg:py-5">
+                  <span className="font-medium lg:hidden">Объект: </span>
                   {row.property}
                 </td>
-                <td className="hidden px-5 py-5 text-xs text-slate-500 xl:table-cell">
+                <td className="block py-1 text-xs text-slate-600 lg:table-cell lg:px-5 lg:py-5">
+                  <span className="font-medium lg:hidden">Создан: </span>
                   {dateTime(row.createdAt)}
                 </td>
-                <td className="whitespace-nowrap px-5 py-5 font-medium">
+                <td className="block py-1 font-medium lg:table-cell lg:px-5 lg:py-5">
+                  <span className="lg:hidden">Стоимость: </span>
                   {money(row.rent)}
                 </td>
-                <td className="px-5 py-5">
+                <td className="block py-1 lg:table-cell lg:px-5 lg:py-5">
                   <StatusBadge status={row.status} />
                 </td>
-                <td className="px-3 py-4">
-                  <div className="flex justify-end gap-1">
+                <td className="block py-1 lg:table-cell lg:px-3 lg:py-4">
+                  <div className="flex justify-start gap-1 lg:justify-end">
                     {!compact && row.status === "PENDING" && (
                       <Button
                         variant="ghost"

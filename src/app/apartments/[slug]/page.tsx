@@ -44,13 +44,13 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
     <>
       <Link
         href="/apartments"
-        className="mb-7 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-700"
+        className="mb-7 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-800"
       >
         <ArrowLeft size={16} aria-hidden="true" /> Все квартиры
       </Link>
       <div className="mb-7">
         {apartment.residentialComplex && (
-          <p className="mb-2 text-sm font-medium text-teal-700">
+          <p className="mb-2 text-sm font-medium text-blue-800">
             {apartment.residentialComplex}
           </p>
         )}
@@ -72,7 +72,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               href={apartment.mapUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-medium text-teal-700 hover:underline"
+              className="inline-flex items-center gap-1.5 font-medium text-blue-800 hover:underline"
               aria-label="Открыть в 2ГИС (новая вкладка)"
             >
               <MapPin size={16} aria-hidden="true" /> Открыть в 2ГИС{" "}
@@ -101,7 +101,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
             <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600">
               <MapPin
                 size={17}
-                className="mt-0.5 shrink-0 text-teal-700"
+                className="mt-0.5 shrink-0 text-blue-800"
                 aria-hidden="true"
               />{" "}
               {apartment.address}
@@ -123,11 +123,11 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               </Button>
             )}
             {apartment.arrivalInstructions && (
-              <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50 p-4">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-teal-900">
+              <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-950">
                   <DoorOpen size={17} aria-hidden="true" /> Информация для гостей
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-teal-900">
+                <p className="mt-2 text-sm leading-6 text-amber-950">
                   {apartment.arrivalInstructions}
                 </p>
               </div>
@@ -216,7 +216,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
             },
           ].map((step, index) => (
             <li key={step.title} className="flex items-start gap-3">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-teal-50 text-sm font-semibold text-teal-800">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-amber-50 text-sm font-semibold text-amber-950">
                 {index + 1}
               </span>
               <div>

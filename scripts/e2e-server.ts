@@ -25,6 +25,11 @@ async function main() {
     },
     update: { passwordHash: await hashPassword(password) },
   });
+  await db.admin.upsert({
+    where: { email: "ui-layout@e2e.test" },
+    create: { email: "ui-layout@e2e.test", passwordHash: await hashPassword(password) },
+    update: { passwordHash: await hashPassword(password) },
+  });
   await db.rateBucket.deleteMany();
   await db.$disconnect();
   const server = spawn(

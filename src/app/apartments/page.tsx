@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 export default function ApartmentsPage() {
   return (
     <>
-      <div className="mb-8 max-w-3xl sm:mb-10">
-        <p className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+      <div className="mb-6 max-w-3xl sm:mb-8">
+        <p className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-amber-800">
           <MapPin size={14} aria-hidden="true" /> Каталог жилья
         </p>
         <h1 className="text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">
