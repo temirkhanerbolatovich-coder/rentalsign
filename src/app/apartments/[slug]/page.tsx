@@ -125,8 +125,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
             {apartment.arrivalInstructions && (
               <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50 p-4">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-teal-900">
-                  <DoorOpen size={17} aria-hidden="true" /> Как попасть в
-                  подъезд
+                  <DoorOpen size={17} aria-hidden="true" /> Информация для гостей
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-teal-900">
                   {apartment.arrivalInstructions}
@@ -134,6 +133,13 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               </div>
             )}
           </section>
+          {apartment.wifi && (
+            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="wifi-title">
+              <h2 id="wifi-title" className="text-lg font-semibold text-slate-900">Wi-Fi для гостей</h2>
+              <p className="mt-3 text-sm text-slate-600">Сеть: <span className="font-medium text-slate-900 break-all">{apartment.wifi.network}</span></p>
+              <p className="mt-2 text-sm text-slate-600">Пароль: <span className="font-medium text-slate-900 break-all">{apartment.wifi.password}</span></p>
+            </section>
+          )}
         </div>
 
         <aside

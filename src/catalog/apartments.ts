@@ -14,6 +14,7 @@ export type Apartment = {
   residentialComplex: string | null;
   description: string | null;
   arrivalInstructions: string | null;
+  wifi: { network: string; password: string } | null;
   unit: string;
   entrance: number;
   floor: number;
@@ -31,7 +32,8 @@ export const apartments: Apartment[] = [
     "address": "ул. Есенберлина, 46",
     "residentialComplex": "Delux Town",
     "description": null,
-    "arrivalInstructions": "Когда подойдёте к подъезду, нажмите на квартиру 10: там видеодомофон.",
+    "arrivalInstructions": "Когда подойдёте к подъезду, нажмите на квартиру 10: там видеодомофон. Уходя из квартиры, берите с собой ключ от домофона.",
+    "wifi": null,
     "unit": "10",
     "entrance": 1,
     "floor": 4,
@@ -91,6 +93,10 @@ export const apartments: Apartment[] = [
     "residentialComplex": null,
     "description": null,
     "arrivalInstructions": null,
+    "wifi": {
+      "network": "Tele2_5G_9921_5G",
+      "password": "82619283"
+    },
     "unit": "17",
     "entrance": 1,
     "floor": 6,
@@ -228,6 +234,10 @@ export const apartments: Apartment[] = [
     "residentialComplex": null,
     "description": null,
     "arrivalInstructions": null,
+    "wifi": {
+      "network": "Dom-26",
+      "password": "Qwerty321!"
+    },
     "unit": "26",
     "entrance": 1,
     "floor": 8,
@@ -292,7 +302,11 @@ export const apartments: Apartment[] = [
     "address": "ул. Базовая, 4",
     "residentialComplex": "Novy Bereg",
     "description": null,
-    "arrivalInstructions": null,
+    "arrivalInstructions": "Уходя из квартиры, берите с собой ключ от домофона.",
+    "wifi": {
+      "network": "KZTK-21383_5G",
+      "password": "RHZ7PRuz"
+    },
     "unit": "70",
     "entrance": 2,
     "floor": 9,
@@ -340,6 +354,10 @@ export const apartments: Apartment[] = [
     "residentialComplex": null,
     "description": null,
     "arrivalInstructions": null,
+    "wifi": {
+      "network": "Huawei-2,4/5heXh",
+      "password": "Xxy2C8JK"
+    },
     "unit": "240",
     "entrance": 7,
     "floor": 6,
@@ -483,6 +501,10 @@ export const apartments: Apartment[] = [
     "residentialComplex": null,
     "description": null,
     "arrivalInstructions": null,
+    "wifi": {
+      "network": "HUAWEI-017",
+      "password": "pdp1531413"
+    },
     "unit": "69",
     "entrance": 4,
     "floor": 5,
@@ -548,6 +570,10 @@ export const apartments: Apartment[] = [
     "residentialComplex": null,
     "description": null,
     "arrivalInstructions": null,
+    "wifi": {
+      "network": "KZTK-37106_5G",
+      "password": "KeFU6SHR"
+    },
     "unit": "35",
     "entrance": 2,
     "floor": 4,

@@ -196,10 +196,28 @@ test("corrected galleries stay attached to the owner's confirmed apartment addre
       );
     }
   }
+  for (const slug of ["esenberlina-46-10", "novy-bereg-70"]) {
+    assert.match(findApartment(slug)!.arrivalInstructions!, /ключ от домофона/i);
+  }
   assert.match(
     findApartment("esenberlina-46-10")!.arrivalInstructions!,
     /10.*видеодомофон|видеодомофон.*10/i,
   );
+});
+
+test("Wi-Fi information is attached only to the six supplied apartments", () => {
+  const expectedNetworks: Record<string, string> = {
+    "bazovaya-2-6-17": "Tele2_5G_9921_5G",
+    "bazovaya-2-6-26": "Dom-26",
+    "novy-bereg-70": "KZTK-21383_5G",
+    "mihaelisa-7-240": "Huawei-2,4/5heXh",
+    "mihaelisa-8-69": "HUAWEI-017",
+    "mihaelisa-8-2-35": "KZTK-37106_5G",
+  };
+  for (const apartment of apartments) {
+    assert.equal(apartment.wifi?.network, expectedNetworks[apartment.slug]);
+    if (apartment.wifi) assert.ok(apartment.wifi.password);
+  }
 });
 
 test(
