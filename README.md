@@ -70,7 +70,7 @@ npm audit --omit=dev
 
 ## Стек и устройство
 
-Next.js App Router / Route Handlers, TypeScript, Tailwind CSS, локальные компоненты shadcn/ui с Radix, Lucide, Prisma 6 + SQLite, Zod, PDFKit + встроенный Noto Sans (SIL OFL). Пароли: scrypt; сессии: случайный токен с хешем в БД и HttpOnly cookie. Подписание вынесено в `SigningProvider` / `DemoSigningProvider`.
+Next.js App Router / Route Handlers, TypeScript, Tailwind CSS, локальные компоненты shadcn/ui с Radix, Lucide, Prisma 6 + SQLite, Zod, PDFKit + встроенные Noto Serif Regular/Bold (SIL OFL). Пароли: scrypt; сессии: случайный токен с хешем в БД и HttpOnly cookie. Подписание вынесено в `SigningProvider` / `DemoSigningProvider`.
 
 ## Документация
 

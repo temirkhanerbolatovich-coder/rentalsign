@@ -349,8 +349,26 @@ test("new template conditions and identities reach immutable contract PDF while 
       assert.ok(body.includes(expected), `PDF is missing: ${expected}`);
     }
     assert.equal(body.includes("undefined"), false);
+    for (const heading of [
+      "АРЕНДОДАТЕЛЬ",
+      "АРЕНДАТОР",
+      "1. Объект аренды и передача",
+      "2. Условия проживания и ответственность",
+      "3. Оплата и срок аренды",
+      "4. Дополнительные условия",
+      "ПРЕДВАРИТЕЛЬНЫЙ ДОКУМЕНТ",
+      "Подписи сторон на бумаге",
+    ]) assert.ok(body.includes(heading), `PDF is missing: ${heading}`);
+    assert.ok(body.includes("Сервис не проставляет подписи в PDF"));
+    assert.ok(body.includes(published.snapshot.landlordName));
+    assert.ok(body.includes(published.snapshot.tenantName));
+    assert.equal(body.includes("Другое имя после отправки"), false);
     const legacyPdf = await generatePdf(legacySnapshot);
     assert.equal(legacyPdf.toString("ascii", 0, 4), "%PDF");
+    rendered.length = 0;
+    await generatePdf(published.snapshot, new Date("2026-10-29T05:00:00Z"));
+    assert.ok(rendered.join("\n").includes("ДЕМО — НЕ ПОДПИСАНО ЭЦП"));
+    assert.equal(rendered.join("\n").includes("ПРЕДВАРИТЕЛЬНЫЙ ДОКУМЕНТ"), false);
   } finally {
     PDFDocument.prototype.text = originalText;
   }
