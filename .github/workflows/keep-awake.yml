@@ -1,7 +1,7 @@
 name: Keep RentalSign awake
 on:
   schedule:
-    - cron: '3,13,23,33,43,53 * * * *'
+    - cron: '3 * * * *'
   workflow_dispatch:
 permissions: {}
 jobs:
