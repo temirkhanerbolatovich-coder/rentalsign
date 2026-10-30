@@ -65,13 +65,14 @@ export function ApartmentGallery({
               aria-label={`Открыть фото ${index + 1} на весь экран`}
             >
               {failedPhotos.includes(photo.src) ? <span className="grid h-full place-items-center text-sm text-slate-600">Не удалось загрузить фотографию</span> : <Image
+                key={photo.src}
                 src={photo.src}
                 alt={photo.alt}
                 fill
                 sizes="(max-width: 1023px) 100vw, 65vw"
                 preload={index === 0}
                 onError={() => markFailed(photo.src)}
-                className="object-contain"
+                className="photo-reveal object-contain"
               />}
               <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-800 shadow-sm">
                 <Expand size={15} aria-hidden="true" /> На весь экран
@@ -110,7 +111,7 @@ export function ApartmentGallery({
           </p>
         </div>
         <div
-          className="mt-3 flex gap-2 overflow-x-auto pb-2"
+          className="mt-3 flex gap-2 overflow-x-auto p-1 -mx-1"
           aria-label="Миниатюры фотографий"
         >
           {photos.map((item, photoIndex) => (
@@ -121,7 +122,7 @@ export function ApartmentGallery({
               aria-pressed={photoIndex === index}
               onClick={() => setIndex(photoIndex)}
               className={cn(
-                "relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700",
+                "gallery-thumbnail relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700",
                 photoIndex === index
                   ? "border-teal-700"
                   : "border-transparent opacity-65 hover:opacity-100",
@@ -156,12 +157,13 @@ export function ApartmentGallery({
         </DialogDescription>
         <div className="relative h-[58dvh] rounded-lg bg-slate-950 sm:h-[64dvh]">
           {failedPhotos.includes(photo.src) ? <p className="grid h-full place-items-center text-sm text-white">Не удалось загрузить фотографию</p> : <Image
+            key={photo.src}
             src={photo.src}
             alt={photo.alt}
             fill
             sizes="95vw"
             onError={() => markFailed(photo.src)}
-            className="object-contain"
+            className="photo-reveal object-contain"
           />}
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">

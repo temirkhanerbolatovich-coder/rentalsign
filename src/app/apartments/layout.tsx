@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { LightNavigation } from "@/components/light-navigation";
 import { Brand } from "@/components/brand";
 
 export default function ApartmentsLayout({
@@ -26,20 +26,10 @@ export default function ApartmentsLayout({
               <Brand />
             </span>
           </Link>
-          <nav
-            aria-label="Главная навигация"
-            className="flex flex-wrap items-center gap-x-4 text-sm sm:gap-8"
-          >
-            <Link href="/apartments" className="inline-flex min-h-11 items-center text-slate-700 hover:text-blue-700">
-              Каталог квартир
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex min-h-11 items-center gap-1.5 font-medium text-blue-800 hover:underline"
-            >
-              Вход для владельца <ArrowUpRight size={15} aria-hidden="true" />
-            </Link>
-          </nav>
+          <LightNavigation label="Главная навигация" items={[
+            { href: "/apartments", label: "Каталог квартир" },
+            { href: "/login", label: "Вход для владельца" },
+          ]} />
         </div>
       </header>
       <main

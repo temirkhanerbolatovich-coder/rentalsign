@@ -16,7 +16,7 @@ export default function ApartmentsPage() {
         <p className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-amber-800">
           <MapPin size={14} aria-hidden="true" /> Каталог жилья
         </p>
-        <h1 className="text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="title-reveal text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">
           Квартиры для аренды
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">

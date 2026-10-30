@@ -202,7 +202,7 @@ export function ContractForm({
           if (section) section.open = true;
         }}
       >
-        <div className="grid items-start gap-6 xl:grid-cols-[1fr_290px]">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_290px]">
           <div className="space-y-5">
             {preview && snapshot ? (
               <ContractDocument snapshot={snapshot} />

@@ -54,7 +54,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
             {apartment.residentialComplex}
           </p>
         )}
-        <h1 className="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+        <h1 className="title-reveal text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
           {apartment.title}
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-slate-600">

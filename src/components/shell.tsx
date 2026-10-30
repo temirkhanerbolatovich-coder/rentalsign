@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Building2, ScrollText, House } from "lucide-react";
+import { LightNavigation } from "./light-navigation";
 import { clientApi } from "./client-api";
 import { Brand } from "./brand";
 
 const navigation = [
-  { href: "/dashboard", label: "Обзор" },
-  { href: "/contracts", label: "Договоры" },
-  { href: "/properties", label: "Объекты" },
-  { href: "/templates", label: "Шаблон" },
-  { href: "/apartments", label: "Каталог" },
+  { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Обзор" },
+  { href: "/contracts", icon: <FileText size={18} />, label: "Договоры" },
+  { href: "/properties", icon: <Building2 size={18} />, label: "Объекты" },
+  { href: "/templates", icon: <ScrollText size={18} />, label: "Шаблон" },
+  { href: "/apartments", icon: <House size={18} />, label: "Каталог" },
 ];
 
 export function Shell({ children, email }: { children: React.ReactNode; email: string }) {
@@ -37,14 +38,7 @@ export function Shell({ children, email }: { children: React.ReactNode; email: s
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-slate-200 bg-white md:flex">
         <Link href="/dashboard" className="flex items-center px-6 py-7 text-xl"><Brand /></Link>
         <p className="px-6 pb-3 text-[10px] font-semibold tracking-[0.16em] text-slate-500">РАБОЧЕЕ ПРОСТРАНСТВО</p>
-        <nav aria-label="Разделы кабинета" className="space-y-1 px-3">
-          {navigation.map(({ href, label }) => (
-            <Link key={href} href={href} aria-current={active(href) ? "page" : undefined}
-              className={`flex min-h-11 items-center rounded-lg px-4 text-sm ${active(href) ? "bg-amber-100 font-semibold text-amber-950" : "text-slate-700 hover:bg-slate-50"}`}>
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <LightNavigation items={navigation} label="Разделы кабинета" vertical className="mx-3" />
         <div className="mt-auto border-t border-slate-200 p-5">
           <p className="text-xs font-medium text-slate-800">Администратор</p>
           <p className="mt-1 break-all text-xs text-slate-500">{email}</p>
@@ -64,14 +58,9 @@ export function Shell({ children, email }: { children: React.ReactNode; email: s
         </header>
         {error && <p role="alert" className="error mx-5 mt-4">{error}</p>}
         <main className="mx-auto max-w-[1440px] p-4 pb-28 sm:p-5 lg:p-10 md:pb-10">{children}</main>
-        <nav aria-label="Разделы кабинета" className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-slate-200 bg-white px-1 pt-2 pb-[max(12px,env(safe-area-inset-bottom))] md:hidden">
-          {navigation.map(({ href, label }) => (
-            <Link key={href} href={href} aria-current={active(href) ? "page" : undefined}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-lg px-1 text-center text-[11px] ${active(href) ? "bg-amber-100 font-semibold text-amber-950" : "text-slate-600"}`}>
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-2 pt-2 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+          <LightNavigation items={navigation} label="Разделы кабинета" className="mobile-light-navigation" />
+        </div>
       </div>
     </div>
   );

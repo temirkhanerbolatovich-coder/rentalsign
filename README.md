@@ -80,6 +80,7 @@ Next.js App Router / Route Handlers, TypeScript, Tailwind CSS, локальны�
 - [Каталог и связь с договорами](docs/CATALOG.md)
 - [Подготовленный кабинет и шаблон](docs/ADMIN_WORKSPACE.md)
 - [Обновление UI/UX и результаты проверки](docs/UI_UX_IMPLEMENTATION.md)
+- [Шрифт и анимации интерфейса](docs/INTERFACE_MOTION.md)
 - [API](docs/API.md)
 - [База данных](docs/DATABASE.md)
 - [Безопасность и ограничения](docs/SECURITY.md)

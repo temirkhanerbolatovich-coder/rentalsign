@@ -1,6 +1,37 @@
 import { test, expect } from "@playwright/test";
 import { apartments } from "../src/catalog/apartments";
 
+test("navigation light follows focus and respects reduced motion", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/apartments");
+  const nav = page.getByRole("navigation", { name: "Главная навигация" });
+  const catalog = nav.getByRole("link", { name: "Каталог квартир" });
+  const owner = nav.getByRole("link", { name: "Вход для владельца" });
+  const light = nav.locator(".navigation-light");
+  await expect(catalog).toHaveAttribute("aria-current", "page");
+  await catalog.focus();
+  await page.keyboard.press("Tab");
+  await expect(owner).toBeFocused();
+  await expect.poll(async () => {
+    const lightBox = await light.boundingBox();
+    const ownerBox = await owner.boundingBox();
+    return Math.abs(lightBox!.x - ownerBox!.x);
+  }).toBeLessThan(1);
+  await expect(catalog).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Tab");
+  await expect.poll(async () => {
+    const lightBox = await light.boundingBox();
+    const catalogBox = await catalog.boundingBox();
+    return Math.abs(lightBox!.x - catalogBox!.x);
+  }).toBeLessThan(1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(light).toHaveCSS("transition-duration", "0s");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCSS("animation-name", "none");
+  await page.screenshot({ path: "output/screenshots/light-navigation-mobile.png", fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: "output/screenshots/light-navigation-desktop.png", fullPage: true });
+});
+
 test("catalog filters survive opening an apartment and returning", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/apartments");
@@ -65,7 +96,8 @@ test("public and owner screens fit the specified widths", async ({ page }) => {
       await page.goto(path);
       await expect(page.locator("main").first()).toBeVisible();
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-      expect(overflow, `${path} at ${width}px`).toBe(false);
+      const overflowing = overflow ? await page.locator("main *").evaluateAll((elements) => elements.filter((element) => element.getBoundingClientRect().right > innerWidth).slice(0, 8).map((element) => ({ tag: element.tagName, class: element.className, width: element.getBoundingClientRect().width }))) : [];
+      expect(overflow, `${path} at ${width}px ${JSON.stringify(overflowing)}`).toBe(false);
     }
   }
 });
