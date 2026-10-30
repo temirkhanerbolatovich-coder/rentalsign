@@ -1,3 +1,4 @@
+import { T } from "./language";
 import type { Apartment } from "@/catalog/apartments";
 
 const currency = new Intl.NumberFormat("ru-RU");
@@ -19,10 +20,10 @@ export function ApartmentPrice({
 
   return (
     <span className={className}>
-      {price}
+      <T text={price} />
       {priceMin !== null && pricingPeriod !== "unconfirmed" && (
         <span className="ml-1 text-sm font-normal text-slate-500">
-          / {pricingPeriod === "day" ? "сутки" : "месяц"}
+          / <T text={pricingPeriod === "day" ? "сутки" : "месяц"} />
         </span>
       )}
     </span>

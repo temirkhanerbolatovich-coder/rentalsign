@@ -1,3 +1,4 @@
+import { T } from "@/components/language";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requirePageAdmin } from "@/auth/session";
@@ -15,8 +16,7 @@ export default async function Contracts() {
       >
         <Button asChild>
           <Link href="/contracts/new">
-            <Plus />
-            Создать договор
+            <Plus /> <T text="Создать договор" />{" "}
           </Link>
         </Button>
       </PageTitle>

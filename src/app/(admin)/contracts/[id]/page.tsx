@@ -1,10 +1,11 @@
+import { LocaleDate, T, Localized } from "@/components/language";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, History } from "lucide-react";
 import { requirePageAdmin } from "@/auth/session";
 import { ownedContract } from "@/repositories/contracts";
 import { getOwnedLink } from "@/services/contracts";
-import { effectiveStatus, dateTime } from "@/domain/contracts";
+import { effectiveStatus } from "@/domain/contracts";
 import { eventLabels } from "@/audit/events";
 import { AppError } from "@/lib/errors";
 import { linkTtlHours } from "@/lib/config";
@@ -43,8 +44,7 @@ export default async function Detail({
         href="/contracts"
         className="mb-5 inline-flex items-center gap-2 text-xs text-slate-500"
       >
-        <ArrowLeft size={14} />
-        Все договоры
+        <ArrowLeft size={14} /> <T text="Все договоры" />{" "}
       </Link>
       <PageTitle
         title={`Договор ${contract.number}`}
@@ -54,7 +54,8 @@ export default async function Detail({
       </PageTitle>
       {(await searchParams).saved && (
         <p role="status" className="success mb-5">
-          Черновик сохранён. Проверьте текст перед созданием ссылки.
+          {" "}
+          <T text="Черновик сохранён. Проверьте текст перед созданием ссылки." />{" "}
         </p>
       )}
       <div className="mb-6">
@@ -66,22 +67,28 @@ export default async function Detail({
           {contract.versions.length > 1 && (
             <section className="card mt-6 p-6">
               <h2 className="mb-4 text-sm font-semibold">
-                Отправленные версии
+                {" "}
+                <T text="Отправленные версии" />{" "}
               </h2>
               <p className="mb-4 text-xs text-slate-500">
-                Каждая версия хранит неизменяемый текст и хеш содержания.
+                {" "}
+                <T text="Каждая версия хранит неизменяемый текст и хеш содержания." />{" "}
               </p>
               {contract.versions.map((v) => (
                 <p
                   key={v.id}
                   className="border-t border-slate-100 py-3 text-xs text-slate-500"
                 >
-                  Версия {v.version} · {dateTime(v.createdAt)} ·{" "}
-                  {v.signedAt
-                    ? "Демо выполнено"
-                    : v.link?.revokedAt
-                      ? "Ссылка отозвана"
-                      : "Отправлена"}
+                  {" "}
+                  <T text="Версия" /> {v.version} ·{" "}
+                  <LocaleDate value={v.createdAt} /> ·{" "}
+                  <Localized>
+                    {v.signedAt
+                      ? "Демо выполнено"
+                      : v.link?.revokedAt
+                        ? "Ссылка отозвана"
+                        : "Отправлена"}
+                  </Localized>
                 </p>
               ))}
             </section>
@@ -103,8 +110,8 @@ export default async function Detail({
           />
           <section className="card p-5">
             <h2 className="mb-5 flex items-center gap-2 text-sm font-semibold">
-              <History size={17} className="text-slate-400" />
-              Журнал событий
+              <History size={17} className="text-slate-400" />{" "}
+              <T text="Журнал событий" />{" "}
             </h2>
             <ol className="space-y-5">
               {contract.events.map((event) => (
@@ -116,10 +123,12 @@ export default async function Detail({
                     {eventLabels[event.action] || event.action}
                   </p>
                   <p className="mt-1 text-[10px] text-slate-400">
-                    {dateTime(event.createdAt)}
+                    <LocaleDate value={event.createdAt} />
                   </p>
                   <p className="mt-1 text-[10px] text-slate-400">
-                    {event.actor === "ADMIN" ? "Администратор" : "Клиент"}
+                    <Localized>
+                      {event.actor === "ADMIN" ? "Администратор" : "Клиент"}
+                    </Localized>
                   </p>
                 </li>
               ))}

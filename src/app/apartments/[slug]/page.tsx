@@ -1,3 +1,5 @@
+import { AvailabilityCalendar } from "@/components/availability-calendar";
+import { T } from "@/components/language";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -46,7 +48,8 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
         href="/apartments"
         className="mb-7 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-800"
       >
-        <ArrowLeft size={16} aria-hidden="true" /> Все квартиры
+        <ArrowLeft size={16} aria-hidden="true" />{" "}
+        <T text="Все квартиры" />{" "}
       </Link>
       <div className="mb-7">
         {apartment.residentialComplex && (
@@ -55,17 +58,24 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
           </p>
         )}
         <h1 className="title-reveal text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-          {apartment.title}
+          <T text={apartment.title} />
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-slate-600">
-          <span>Квартира {apartment.unit}</span>
-          <span>Подъезд {apartment.entrance}</span>
+          <span>
+            {" "}
+            <T text="Квартира" /> {apartment.unit}
+          </span>
+          <span>
+            {" "}
+            <T text="Подъезд" /> {apartment.entrance}
+          </span>
           <span className="inline-flex items-center gap-1.5">
-            <Layers3 size={16} aria-hidden="true" /> Этаж {apartment.floor}
+            <Layers3 size={16} aria-hidden="true" /> <T text="Этаж" />{" "}
+            {apartment.floor}
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Images size={16} aria-hidden="true" /> {apartment.photos.length}{" "}
-            фото
+            <T text="фото" />{" "}
           </span>
           {apartment.mapUrl && (
             <a
@@ -75,7 +85,8 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               className="inline-flex items-center gap-1.5 font-medium text-blue-800 hover:underline"
               aria-label="Открыть в 2ГИС (новая вкладка)"
             >
-              <MapPin size={16} aria-hidden="true" /> Открыть в 2ГИС{" "}
+              <MapPin size={16} aria-hidden="true" />{" "}
+              <T text="Открыть в 2ГИС" />{" "}
               <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           )}
@@ -88,6 +99,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
             photos={apartment.photos}
             address={apartment.address}
           />
+          <AvailabilityCalendar slug={apartment.slug} />
           <section
             className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
             aria-labelledby="apartment-address-title"
@@ -96,7 +108,8 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               id="apartment-address-title"
               className="text-lg font-semibold text-slate-900"
             >
-              Адрес и расположение
+              {" "}
+              <T text="Адрес и расположение" />{" "}
             </h2>
             <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600">
               <MapPin
@@ -118,26 +131,50 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Посмотреть на карте 2ГИС <ArrowUpRight aria-hidden="true" />
+                  {" "}
+                  <T text="Посмотреть на карте 2ГИС" />{" "}
+                  <ArrowUpRight aria-hidden="true" />
                 </a>
               </Button>
             )}
             {apartment.arrivalInstructions && (
               <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-950">
-                  <DoorOpen size={17} aria-hidden="true" /> Информация для гостей
+                  <DoorOpen size={17} aria-hidden="true" />{" "}
+                  <T text="Информация для гостей" />{" "}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-amber-950">
-                  {apartment.arrivalInstructions}
+                  <T text={apartment.arrivalInstructions} />
                 </p>
               </div>
             )}
           </section>
           {apartment.wifi && (
-            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="wifi-title">
-              <h2 id="wifi-title" className="text-lg font-semibold text-slate-900">Wi-Fi для гостей</h2>
-              <p className="mt-3 text-sm text-slate-600">Сеть: <span className="font-medium text-slate-900 break-all">{apartment.wifi.network}</span></p>
-              <p className="mt-2 text-sm text-slate-600">Пароль: <span className="font-medium text-slate-900 break-all">{apartment.wifi.password}</span></p>
+            <section
+              className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
+              aria-labelledby="wifi-title"
+            >
+              <h2
+                id="wifi-title"
+                className="text-lg font-semibold text-slate-900"
+              >
+                {" "}
+                <T text="Wi-Fi для гостей" />{" "}
+              </h2>
+              <p className="mt-3 text-sm text-slate-600">
+                {" "}
+                <T text="Сеть:" />{" "}
+                <span className="font-medium text-slate-900 break-all">
+                  {apartment.wifi.network}
+                </span>
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                {" "}
+                <T text="Пароль:" />{" "}
+                <span className="font-medium text-slate-900 break-all">
+                  {apartment.wifi.password}
+                </span>
+              </p>
             </section>
           )}
         </div>
@@ -147,41 +184,48 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
           aria-label="Цена и условия аренды"
         >
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
-            Стоимость аренды
+            {" "}
+            <T text="Стоимость аренды" />{" "}
           </p>
           <ApartmentPrice
             apartment={apartment}
             className="block text-3xl font-semibold tracking-tight text-slate-900"
           />
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            {apartment.priceMin === null
-              ? "Стоимость уточняется у владельца."
-              : "Указанная владельцем цена."}{" "}
-            {apartment.pricingPeriod === "unconfirmed" &&
-              "Период аренды и итоговую стоимость нужно согласовать."}
+            {apartment.priceMin === null ? (
+              <T text="Стоимость уточняется у владельца." />
+            ) : (
+              <T text="Указанная владельцем цена." />
+            )}{" "}
+            {apartment.pricingPeriod === "unconfirmed" && (
+              <T text="Период аренды и итоговую стоимость нужно согласовать." />
+            )}
           </p>
           <div className="my-5 border-t border-slate-100" />
           <h2 className="text-sm font-semibold text-slate-900">
-            Понравилась квартира?
+            {" "}
+            <T text="Понравилась квартира?" />{" "}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Сначала согласуйте с владельцем даты, стоимость и условия
-            проживания. После этого владелец подготовит договор и отправит
-            персональную ссылку.
+            {" "}
+            <T text="Сначала согласуйте с владельцем даты, стоимость и условия проживания. После этого владелец подготовит договор и отправит персональную ссылку." />{" "}
           </p>
           <div className="mt-5 rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-medium text-slate-600">
-              Для владельца квартиры
+              {" "}
+              <T text="Для владельца квартиры" />{" "}
             </p>
             <Button asChild className="mt-3 w-full">
               <Link
                 href={`/login?apartment=${encodeURIComponent(apartment.slug)}`}
               >
-                <FileText aria-hidden="true" /> Подготовить договор
+                <FileText aria-hidden="true" />{" "}
+                <T text="Подготовить договор" />{" "}
               </Link>
             </Button>
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              После входа выбранная квартира будет передана в форму договора.
+              {" "}
+              <T text="После входа выбранная квартира будет передана в форму договора." />{" "}
             </p>
           </div>
           <div className="mt-4">
@@ -198,7 +242,8 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
           id="apartment-contract-flow-title"
           className="text-xl font-semibold tracking-tight text-slate-900"
         >
-          От выбора квартиры к договору
+          {" "}
+          <T text="От выбора квартиры к договору" />{" "}
         </h2>
         <ol className="mt-5 grid gap-5 sm:grid-cols-3">
           {[
@@ -221,10 +266,10 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               </span>
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">
-                  {step.title}
+                  <T text={step.title} />
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {step.text}
+                  <T text={step.text} />
                 </p>
               </div>
             </li>

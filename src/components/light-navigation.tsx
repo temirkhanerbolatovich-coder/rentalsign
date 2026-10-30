@@ -1,5 +1,6 @@
 "use client";
 
+import { T, translate, useLanguage } from "./language";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
@@ -8,12 +9,18 @@ import { cn } from "@/lib/utils";
 type NavigationItem = { href: string; label: string; icon?: ReactNode };
 
 /** The light follows pointer/keyboard focus; aria-current always reflects the route. */
-export function LightNavigation({ items, label, className, vertical = false }: {
+export function LightNavigation({
+  items,
+  label,
+  className,
+  vertical = false,
+}: {
   items: NavigationItem[];
   label: string;
   className?: string;
   vertical?: boolean;
 }) {
+  const language = useLanguage();
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
   const lightRef = useRef<HTMLSpanElement>(null);
@@ -35,8 +42,11 @@ export function LightNavigation({ items, label, className, vertical = false }: {
     const nav = navRef.current;
     if (!nav) return;
     const focused = document.activeElement;
-    moveLight(focused instanceof HTMLAnchorElement && nav.contains(focused)
-      ? focused : nav.querySelector<HTMLElement>('[aria-current="page"]'));
+    moveLight(
+      focused instanceof HTMLAnchorElement && nav.contains(focused)
+        ? focused
+        : nav.querySelector<HTMLElement>('[aria-current="page"]'),
+    );
   }
 
   useEffect(() => {
@@ -44,8 +54,11 @@ export function LightNavigation({ items, label, className, vertical = false }: {
     if (!nav) return;
     const update = () => {
       const focused = document.activeElement;
-      moveLight(focused instanceof HTMLAnchorElement && nav.contains(focused)
-        ? focused : nav.querySelector<HTMLElement>('[aria-current="page"]'));
+      moveLight(
+        focused instanceof HTMLAnchorElement && nav.contains(focused)
+          ? focused
+          : nav.querySelector<HTMLElement>('[aria-current="page"]'),
+      );
     };
     update();
     const observer = new ResizeObserver(update);
@@ -55,23 +68,47 @@ export function LightNavigation({ items, label, className, vertical = false }: {
   }, [pathname]);
 
   return (
-    <nav ref={navRef} aria-label={label}
-      className={cn("light-navigation", vertical && "light-navigation-vertical", className)}
+    <nav
+      ref={navRef}
+      aria-label={translate(label, language)}
+      className={cn(
+        "light-navigation",
+        vertical && "light-navigation-vertical",
+        className,
+      )}
       onPointerLeave={restoreLight}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
-          moveLight(event.currentTarget.querySelector<HTMLElement>('[aria-current="page"]'));
+          moveLight(
+            event.currentTarget.querySelector<HTMLElement>(
+              '[aria-current="page"]',
+            ),
+          );
         }
-      }}>
+      }}
+    >
       <span ref={lightRef} className="navigation-light" aria-hidden="true" />
       {items.map(({ href, label: itemLabel, icon }) => (
-        <Link key={href} href={href}
-          aria-current={pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined}
+        <Link
+          key={href}
+          href={href}
+          aria-current={
+            pathname === href || pathname.startsWith(`${href}/`)
+              ? "page"
+              : undefined
+          }
           className="light-navigation-link"
           onPointerEnter={(event) => moveLight(event.currentTarget)}
-          onFocus={(event) => moveLight(event.currentTarget)}>
-          {icon && <span className="navigation-icon" aria-hidden="true">{icon}</span>}
-          <span>{itemLabel}</span>
+          onFocus={(event) => moveLight(event.currentTarget)}
+        >
+          {icon && (
+            <span className="navigation-icon" aria-hidden="true">
+              {icon}
+            </span>
+          )}
+          <span>
+            <T text={itemLabel} />
+          </span>
         </Link>
       ))}
     </nav>

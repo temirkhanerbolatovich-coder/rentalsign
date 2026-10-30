@@ -1,5 +1,7 @@
 "use client";
 
+import { T, Localized, translate, useLanguage } from "@/components/language";
+
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,6 +19,7 @@ export function ContractTemplateEditor({
 }: {
   initial: ContractTemplate;
 }) {
+  const language = useLanguage();
   const router = useRouter();
   const [data, setData] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -64,7 +67,9 @@ export function ContractTemplateEditor({
   ) {
     return (
       <label className="block">
-        <span className="label">{label}</span>
+        <span className="label">
+          <Localized>{label}</Localized>
+        </span>
         <input
           className="field"
           value={data[key]}
@@ -80,13 +85,12 @@ export function ContractTemplateEditor({
   return (
     <>
       <PageTitle
-        title="Шаблон договора"
+        title={translate("Шаблон договора", language)}
         description="Один раз заполните реквизиты и условия. Они подставятся в каждый новый договор."
       >
         <Button asChild variant="outline">
           <Link href="/contracts/new">
-            <Plus />
-            Создать договор
+            <Plus /> <T text="Создать договор" />{" "}
           </Link>
         </Button>
       </PageTitle>
@@ -104,11 +108,12 @@ export function ContractTemplateEditor({
           <div className="space-y-5">
             <section className="card p-5 sm:p-7">
               <h2 className="text-base font-semibold">
-                Реквизиты арендодателя
+                {" "}
+                <T text="Реквизиты арендодателя" />{" "}
               </h2>
               <p className="mb-5 mt-2 text-xs leading-5 text-slate-500">
-                Данные доступны в вашем кабинете и попадут в договор при его
-                создании. Можно оставить поля пустыми и заполнить их позже.
+                {" "}
+                <T text="Данные доступны в вашем кабинете и попадут в договор при его создании. Можно оставить поля пустыми и заполнить их позже." />{" "}
               </p>
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
@@ -122,12 +127,12 @@ export function ContractTemplateEditor({
             </section>
             <section className="card p-5 sm:p-7">
               <h2 className="flex items-center gap-2 text-base font-semibold">
-                <FileText size={18} className="text-teal-700" />
-                Условия по вашему образцу
+                <FileText size={18} className="text-teal-700" />{" "}
+                <T text="Условия по вашему образцу" />{" "}
               </h2>
               <p className="mb-5 mt-2 text-xs leading-5 text-slate-500">
-                Правила проживания подготовлены по присланному договору.
-                Проверьте и отредактируйте формулировки перед использованием.
+                {" "}
+                <T text="Правила проживания подготовлены по присланному договору. Проверьте и отредактируйте формулировки перед использованием." />{" "}
               </p>
               <div className="space-y-3">
                 {Object.entries(termLabels).map(([key, label], index) => (
@@ -137,10 +142,12 @@ export function ContractTemplateEditor({
                     className="rounded-lg border border-slate-200 p-4"
                   >
                     <summary className="cursor-pointer text-sm font-medium">
-                      {label}
+                      <Localized>{label}</Localized>
                     </summary>
                     <label className="mt-4 block">
-                      <span className="sr-only">{label}</span>
+                      <span className="sr-only">
+                        <Localized>{label}</Localized>
+                      </span>
                       <textarea
                         className="field min-h-44"
                         value={data[key as keyof typeof termLabels]}
@@ -157,7 +164,10 @@ export function ContractTemplateEditor({
                   </details>
                 ))}
                 <label className="block pt-3">
-                  <span className="label">Дополнительные условия</span>
+                  <span className="label">
+                    {" "}
+                    <T text="Дополнительные условия" />{" "}
+                  </span>
                   <textarea
                     className="field min-h-24"
                     value={data.additionalTerms}
@@ -165,36 +175,42 @@ export function ContractTemplateEditor({
                       update("additionalTerms", event.target.value)
                     }
                     maxLength={10000}
-                    placeholder="Необязательно"
+                    placeholder={translate("Необязательно", language)}
                   />
                 </label>
               </div>
             </section>
           </div>
           <aside className="card p-6 xl:sticky xl:top-6">
-            <p className="eyebrow">ДЛЯ НОВЫХ ДОГОВОРОВ</p>
-            <h2 className="mt-3 text-lg font-semibold">Шаблон готов заранее</h2>
+            <p className="eyebrow">
+              {" "}
+              <T text="ДЛЯ НОВЫХ ДОГОВОРОВ" />{" "}
+            </p>
+            <h2 className="mt-3 text-lg font-semibold">
+              {" "}
+              <T text="Шаблон готов заранее" />{" "}
+            </h2>
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              При оформлении останется выбрать квартиру, указать арендатора,
-              даты и согласованную сумму за весь срок.
+              {" "}
+              <T text="При оформлении останется выбрать квартиру, указать арендатора, даты и согласованную сумму за весь срок." />{" "}
             </p>
             <p className="my-5 flex gap-2 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">
-              <Check size={15} className="mt-0.5 shrink-0 text-teal-700" />
-              Сохранение шаблона не меняет уже созданные и отправленные
-              договоры.
+              <Check size={15} className="mt-0.5 shrink-0 text-teal-700" />{" "}
+              <T text="Сохранение шаблона не меняет уже созданные и отправленные договоры." />{" "}
             </p>
             <Button className="w-full" disabled={busy}>
               <Save />
-              {busy ? "Сохраняем…" : "Сохранить шаблон"}
+              <Localized>{busy ? "Сохраняем…" : "Сохранить шаблон"}</Localized>
             </Button>
             {saved && (
               <p role="status" className="mt-4 text-xs leading-5 text-teal-800">
-                Шаблон сохранён. Данные подставятся в новые договоры.
+                {" "}
+                <T text="Шаблон сохранён. Данные подставятся в новые договоры." />{" "}
               </p>
             )}
             {error && (
               <p role="alert" className="error mt-4">
-                {error}
+                <Localized>{error}</Localized>
               </p>
             )}
           </aside>

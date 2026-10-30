@@ -1,4 +1,13 @@
 "use client";
+
+import {
+  LocaleDate,
+  T,
+  Localized,
+  translate,
+  useLanguage,
+} from "@/components/language";
+
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,7 +23,7 @@ import {
 import { Button } from "./ui/button";
 import { ConfirmAction } from "./confirm-action";
 import { clientApi } from "./client-api";
-import { dateTime, whatsappUrl, type ContractStatus } from "@/domain/contracts";
+import { whatsappUrl, type ContractStatus } from "@/domain/contracts";
 export function ContractActions({
   id,
   number,
@@ -32,6 +41,7 @@ export function ContractActions({
   initialLink?: { url: string; expiresAt: string };
   defaultTtl: number;
 }) {
+  const language = useLanguage();
   const router = useRouter();
   const [ttl, setTtl] = useState(defaultTtl);
   const [message, setMessage] = useState("");
@@ -78,19 +88,23 @@ export function ContractActions({
   }
   return (
     <div className="card p-5">
-      <p className="eyebrow">ДЕЙСТВИЯ С ДОГОВОРОМ</p>
+      <p className="eyebrow">
+        {" "}
+        <T text="ДЕЙСТВИЯ С ДОГОВОРОМ" />{" "}
+      </p>
       <div className="mt-5 space-y-3">
         <Button asChild variant="outline" className="w-full">
           <a href={`/api/contracts/${id}/pdf`}>
             <Download />
-            {status === "DEMO_SIGNED" ? "Итоговый демо PDF" : "Скачать PDF"}
+            <Localized>
+              {status === "DEMO_SIGNED" ? "Итоговый демо PDF" : "Скачать PDF"}
+            </Localized>
           </a>
         </Button>
         {status === "DRAFT" && (
           <Button asChild variant="outline" className="w-full">
             <Link href={`/contracts/${id}/edit`}>
-              <Pencil />
-              Редактировать черновик
+              <Pencil /> <T text="Редактировать черновик" />{" "}
             </Link>
           </Button>
         )}
@@ -101,7 +115,7 @@ export function ContractActions({
           onClick={duplicate}
         >
           <Files />
-          {busy ? "Создаём копию…" : "Создать на основе"}
+          <Localized>{busy ? "Создаём копию…" : "Создать на основе"}</Localized>
         </Button>
       </div>
       {status !== "DEMO_SIGNED" && (
@@ -109,7 +123,10 @@ export function ContractActions({
           {link && (
             <>
               <label className="block">
-                <span className="label">Персональная ссылка</span>
+                <span className="label">
+                  {" "}
+                  <T text="Персональная ссылка" />{" "}
+                </span>
                 <input
                   readOnly
                   value={link.url}
@@ -118,11 +135,11 @@ export function ContractActions({
                 />
               </label>
               <p className="mt-2 text-[11px] leading-5 text-slate-500">
-                Действует до {dateTime(link.expiresAt)}
+                {" "}
+                <T text="Действует до" /> <LocaleDate value={link.expiresAt} />
               </p>
               <Button className="mt-3 w-full" onClick={copy}>
-                <Copy />
-                Копировать ссылку
+                <Copy /> <T text="Копировать ссылку" />{" "}
               </Button>
               <Button asChild variant="outline" className="mt-3 w-full">
                 <a
@@ -130,19 +147,17 @@ export function ContractActions({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <MessageCircle />
-                  Отправить в WhatsApp
+                  <MessageCircle /> <T text="Отправить в WhatsApp" />{" "}
                 </a>
               </Button>
               <div className="mt-3">
                 <ConfirmAction
-                  title="Отозвать персональную ссылку?"
+                  title={translate("Отозвать персональную ссылку?", language)}
                   description="Клиент больше не сможет открыть договор по этой ссылке. Снимок договора сохранится."
                   label="Отозвать ссылку"
                   trigger={
                     <>
-                      <Ban />
-                      Отозвать ссылку
+                      <Ban /> <T text="Отозвать ссылку" />{" "}
                     </>
                   }
                   destructive
@@ -152,7 +167,10 @@ export function ContractActions({
             </>
           )}
           <label className="mt-5 block">
-            <span className="label">Срок новой ссылки, часов</span>
+            <span className="label">
+              {" "}
+              <T text="Срок новой ссылки, часов" />{" "}
+            </span>
             <input
               className="field"
               type="number"
@@ -175,7 +193,9 @@ export function ContractActions({
               trigger={
                 <>
                   <Link2 />
-                  {link ? "Создать новую ссылку" : "Сформировать ссылку"}
+                  <Localized>
+                    {link ? "Создать новую ссылку" : "Сформировать ссылку"}
+                  </Localized>
                 </>
               }
               disabled={!Number.isInteger(ttl) || ttl < 1 || ttl > 720}
@@ -186,18 +206,18 @@ export function ContractActions({
       )}
       {status === "DEMO_SIGNED" && (
         <p className="mt-5 rounded-lg bg-teal-50 p-4 text-xs leading-5 text-teal-800">
-          Демонстрационное действие выполнено. Содержание этой версии
-          заблокировано.
+          {" "}
+          <T text="Демонстрационное действие выполнено. Содержание этой версии заблокировано." />{" "}
         </p>
       )}
       {message && (
         <p role="status" className="success mt-4">
-          {message}
+          <Localized>{message}</Localized>
         </p>
       )}
       {error && (
         <p role="alert" className="error mt-4">
-          {error}
+          <Localized>{error}</Localized>
         </p>
       )}
     </div>

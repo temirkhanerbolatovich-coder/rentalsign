@@ -1,5 +1,6 @@
-import { ShieldAlert } from "lucide-react";
 import { DEMO_WARNING } from "@/domain/contracts";
+import { T } from "./language";
+import { ShieldAlert } from "lucide-react";
 export function DemoNotice({ compact = false }: { compact?: boolean }) {
   return (
     <div
@@ -7,12 +8,18 @@ export function DemoNotice({ compact = false }: { compact?: boolean }) {
     >
       <ShieldAlert className="mt-0.5 size-5 shrink-0" />
       <div>
-        <strong className="block mb-1">Демонстрационный режим</strong>
+        <strong className="block mb-1">
+          <T text="Демонстрационный режим" />
+        </strong>
         <p>
-          {compact
-            ? "Демоподпись не является ЭЦП. Шаблон договора не прошёл юридическую проверку."
-            : DEMO_WARNING +
-              ". Шаблон договора не прошёл юридическую проверку."}
+          <T
+            text={
+              compact
+                ? "Демоподпись не является ЭЦП. Шаблон договора не прошёл юридическую проверку."
+                : DEMO_WARNING +
+                  ". Шаблон договора не прошёл юридическую проверку."
+            }
+          />
         </p>
       </div>
     </div>

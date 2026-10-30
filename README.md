@@ -74,6 +74,8 @@ Next.js App Router / Route Handlers, TypeScript, Tailwind CSS, локальны�
 
 ## Документация
 
+- [Qutty Qonaq: языки и ручная занятость](docs/QUTTY_QONAQ.md)
+
 - [Бесплатное облачное размещение](docs/DEPLOYMENT.md)
 
 - [Архитектура](docs/ARCHITECTURE.md)

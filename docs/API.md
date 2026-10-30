@@ -45,3 +45,8 @@ ContractInput: `propertyId,landlordName,landlordId,landlordPhone,tenantName,tena
 Повторное демоподписание возвращает 409. Клиент может повторно читать действующую ссылку и после демоподписания. PDF: `application/pdf`, attachment, private/no-store. Запрос без сессии к административному PDF возвращает 401.
 
 WhatsApp — обычный URL `https://wa.me/<digits>?text=<URL-encoded message>`. Ключ API не требуется; приложение не отправляет сообщения автоматически.
+
+
+## Ручная занятость
+
+Контракт `GET/POST/DELETE /api/availability`, авторизация и публичные поля описаны в [QUTTY_QONAQ.md](QUTTY_QONAQ.md#api-контракт).

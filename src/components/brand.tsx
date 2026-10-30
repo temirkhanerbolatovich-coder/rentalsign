@@ -1,19 +1,20 @@
 import Image from "next/image";
-
 export function Brand() {
   return (
-    <span className="inline-flex items-center gap-2.5 font-semibold tracking-tight">
-      <span className="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-white">
-        <Image
-          src="/brand/rentalsign-house-document.png"
-          alt=""
-          width={56}
-          height={56}
-          className="absolute max-w-none"
-        />
-      </span>
-      <span>
-        RentalSign<span className="text-teal-500">.</span>
+    <span className="inline-flex items-center gap-2 font-semibold tracking-tight">
+      <Image
+        src="/brand/qutty-qonaq.png"
+        alt=""
+        preload
+        width={64}
+        height={64}
+        className="rounded-xl"
+      />
+      <span className="text-base leading-tight">
+        Qutty Qonaq
+        <span className="block text-[9px] font-medium tracking-[.2em] text-amber-800">
+          APARTMENTS
+        </span>
       </span>
     </span>
   );

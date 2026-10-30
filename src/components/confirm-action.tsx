@@ -1,4 +1,7 @@
 "use client";
+
+import { T, Localized } from "@/components/language";
+
 import { useState } from "react";
 import {
   Dialog,
@@ -45,14 +48,14 @@ export function ConfirmAction({
       </DialogTrigger>
       <DialogContent>
         <DialogTitle className="pr-6 text-lg font-semibold">
-          {title}
+          <Localized>{title}</Localized>
         </DialogTitle>
         <DialogDescription className="mt-3 text-sm leading-6 text-slate-500">
-          {description}
+          <Localized>{description}</Localized>
         </DialogDescription>
         {error && (
           <p role="alert" className="error mt-4">
-            {error}
+            <Localized>{error}</Localized>
           </p>
         )}
         <div className="mt-6 flex justify-end gap-3">
@@ -61,7 +64,8 @@ export function ConfirmAction({
             disabled={busy}
             onClick={() => setOpen(false)}
           >
-            Отмена
+            {" "}
+            <T text="Отмена" />{" "}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
@@ -78,7 +82,7 @@ export function ConfirmAction({
               }
             }}
           >
-            {busy ? "Выполняем…" : label}
+            <Localized>{busy ? "Выполняем…" : label}</Localized>
           </Button>
         </div>
       </DialogContent>

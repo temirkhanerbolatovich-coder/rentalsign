@@ -1,3 +1,4 @@
+import { T } from "@/components/language";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requirePageAdmin } from "@/auth/session";
@@ -24,13 +25,16 @@ export default async function Edit({
     return (
       <div className="card p-8">
         <h1 className="text-xl font-semibold">
-          Отправленный договор заблокирован
+          {" "}
+          <T text="Отправленный договор заблокирован" />{" "}
         </h1>
         <p className="my-4 text-sm text-slate-500">
-          Создайте новый договор на его основе, чтобы изменить условия.
+          {" "}
+          <T text="Создайте новый договор на его основе, чтобы изменить условия." />{" "}
         </p>
         <Link className="text-teal-700 underline" href={`/contracts/${id}`}>
-          Открыть договор
+          {" "}
+          <T text="Открыть договор" />{" "}
         </Link>
       </div>
     );

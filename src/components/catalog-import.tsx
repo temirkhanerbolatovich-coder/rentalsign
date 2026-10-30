@@ -1,4 +1,7 @@
 "use client";
+
+import { T, Localized } from "@/components/language";
+
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -31,27 +34,39 @@ export function CatalogImport({
   }
   return (
     <section className="card mx-auto max-w-2xl p-6 sm:p-9">
-      <p className="eyebrow mb-3">КВАРТИРА ИЗ КАТАЛОГА</p>
-      <h1 className="text-2xl font-semibold">{title}</h1>
+      <p className="eyebrow mb-3">
+        {" "}
+        <T text="КВАРТИРА ИЗ КАТАЛОГА" />{" "}
+      </p>
+      <h1 className="text-2xl font-semibold">
+        <Localized>{title}</Localized>
+      </h1>
       <p className="my-5 text-sm leading-6 text-slate-600">
-        Добавьте квартиру в свои объекты, чтобы подготовить договор. Затем
-        укажите согласованные даты, общую стоимость за весь срок и депозит. Это
-        действие не бронирует квартиру.
+        {" "}
+        <T text="Добавьте квартиру в свои объекты, чтобы подготовить договор. Затем укажите согласованные даты, общую стоимость за весь срок и депозит. Это действие не бронирует квартиру." />{" "}
       </p>
       {error && (
         <p role="alert" className="error mb-5">
-          {error}
+          <Localized>{error}</Localized>
         </p>
       )}
       <div className="flex flex-wrap gap-3">
         <Button onClick={prepare} disabled={busy}>
-          {busy ? "Добавляем…" : "Добавить объект и продолжить"}
+          <Localized>
+            {busy ? "Добавляем…" : "Добавить объект и продолжить"}
+          </Localized>
         </Button>
         <Button asChild variant="outline">
-          <Link href={`/apartments/${slug}`}>Карточка квартиры</Link>
+          <Link href={`/apartments/${slug}`}>
+            {" "}
+            <T text="Карточка квартиры" />{" "}
+          </Link>
         </Button>
         <Button asChild variant="ghost">
-          <Link href="/properties">Мои объекты</Link>
+          <Link href="/properties">
+            {" "}
+            <T text="Мои объекты" />{" "}
+          </Link>
         </Button>
       </div>
     </section>

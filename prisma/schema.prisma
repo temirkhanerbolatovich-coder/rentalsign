@@ -16,6 +16,7 @@ model Admin {
   sessions     Session[]
   properties   Property[]
   contracts    Contract[]
+  availability Availability[]
 }
 
 model Session {
@@ -110,4 +111,19 @@ model RateBucket {
   expiresAt DateTime
 
   @@index([expiresAt])
+}
+
+// Public calendar contains dates/status only; contract snapshots remain independent.
+model Availability {
+  owner       Admin @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id          String @id @default(cuid())
+  ownerId     String
+  catalogSlug String
+  startDate   String
+  endDate     String
+  status      String
+  createdAt   DateTime @default(now())
+
+  @@index([catalogSlug, startDate, endDate])
+  @@index([ownerId])
 }

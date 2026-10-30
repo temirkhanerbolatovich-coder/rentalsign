@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { LanguageProvider } from "@/components/language";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -10,22 +12,29 @@ const interfaceFont = localFont({
 });
 export const metadata: Metadata = {
   title: {
-    default: "RentalSign — договоры аренды",
-    template: "%s · RentalSign",
+    default: "Qutty Qonaq — договоры аренды",
+    template: "%s · Qutty Qonaq",
   },
   description:
     "Каталог квартир с фотографиями и оформление договоров аренды с демонстрационным подписанием. Настоящая ЭЦП не используется.",
   robots: { index: false, follow: false },
-  icons: { icon: "/brand/rentalsign-house-document.png" },
+  icons: { icon: "/brand/qutty-qonaq.png" },
 };
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const savedLanguage = (await cookies()).get("qutty-language")?.value;
+  const language =
+    savedLanguage === "kk" || savedLanguage === "en" ? savedLanguage : "ru";
   return (
-    <html lang="ru" className={interfaceFont.variable}>
-      <body>{children}</body>
+    <html lang={language} className={interfaceFont.variable}>
+      <body>
+        <LanguageProvider initialLanguage={language}>
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   );
 }

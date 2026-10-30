@@ -1,3 +1,4 @@
+import { T, Localized } from "@/components/language";
 import { Link2Off } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { publicContract } from "@/services/contracts";
@@ -29,15 +30,18 @@ export default async function Sign({
           </div>
           <Link2Off className="mx-auto mb-5 text-slate-400" size={40} />
           <h1 className="text-xl font-semibold">
-            {accessError?.status === 429
-              ? "Попробуйте позже"
-              : "Ссылка недоступна"}
+            <Localized>
+              {accessError?.status === 429
+                ? "Попробуйте позже"
+                : "Ссылка недоступна"}
+            </Localized>
           </h1>
           <p className="mt-4 text-sm leading-6 text-slate-500">
-            {accessError?.message || "Ссылка не найдена"}
+            <Localized>{accessError?.message || "Ссылка не найдена"}</Localized>
           </p>
           <p className="mt-6 text-xs text-slate-400">
-            Личные данные договора не отображаются.
+            {" "}
+            <T text="Личные данные договора не отображаются." />{" "}
           </p>
         </div>
       </main>

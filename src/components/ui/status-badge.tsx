@@ -1,3 +1,4 @@
+import { Localized } from "@/components/language";
 import { statusLabels, type ContractStatus } from "@/domain/contracts";
 const colors: Record<ContractStatus, string> = {
   DRAFT: "bg-slate-100 text-slate-600",
@@ -12,7 +13,7 @@ export function StatusBadge({ status }: { status: ContractStatus }) {
       className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium ${colors[status]}`}
     >
       <span className="size-1.5 rounded-full bg-current opacity-70" />
-      {statusLabels[status]}
+      <Localized>{statusLabels[status]}</Localized>
     </span>
   );
 }

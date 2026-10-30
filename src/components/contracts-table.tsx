@@ -1,9 +1,17 @@
 "use client";
+
+import {
+  LocaleDate,
+  T,
+  Localized,
+  translate,
+  useLanguage,
+} from "@/components/language";
+
 import Link from "next/link";
 import { useState } from "react";
 import { Search, ArrowUpRight, Copy, Download, FileText } from "lucide-react";
 import {
-  dateTime,
   money,
   statuses,
   statusLabels,
@@ -28,6 +36,7 @@ export function ContractsTable({
   rows: ContractRow[];
   compact?: boolean;
 }) {
+  const language = useLanguage();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
   const [message, setMessage] = useState("");
@@ -66,23 +75,26 @@ export function ContractsTable({
               size={16}
             />
             <input
-              aria-label="Поиск договоров"
+              aria-label={translate("Поиск договоров", language)}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Номер, арендатор или объект…"
+              placeholder={translate("Номер, арендатор или объект…", language)}
               className="field pl-10"
             />
           </div>
           <select
-            aria-label="Фильтр по статусу"
+            aria-label={translate("Фильтр по статусу", language)}
             className="field w-full sm:w-52"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="">Все статусы</option>
+            <option value="">
+              {" "}
+              <T text="Все статусы" />{" "}
+            </option>
             {statuses.map((value) => (
               <option key={value} value={value}>
-                {statusLabels[value]}
+                <Localized>{statusLabels[value]}</Localized>
               </option>
             ))}
           </select>
@@ -90,29 +102,43 @@ export function ContractsTable({
       )}
       {message && (
         <p role="status" className="success m-4">
-          {message}
+          <Localized>{message}</Localized>
         </p>
       )}
       {error && (
         <p role="alert" className="error m-4">
-          {error}
+          <Localized>{error}</Localized>
         </p>
       )}
       <div>
         <table className="w-full text-left text-sm">
           <thead className="hidden lg:table-header-group">
             <tr className="border-b border-slate-100 bg-slate-50/70 text-[11px] uppercase tracking-wide text-slate-500">
-              <th className="px-5 py-3 font-medium">Договор / арендатор</th>
               <th className="px-5 py-3 font-medium">
-                Объект
+                {" "}
+                <T text="Договор / арендатор" />{" "}
+              </th>
+              <th className="px-5 py-3 font-medium">
+                {" "}
+                <T text="Объект" />{" "}
               </th>
               <th className="hidden px-5 py-3 font-medium lg:table-cell">
-                Создан
+                {" "}
+                <T text="Создан" />{" "}
               </th>
-              <th className="px-5 py-3 font-medium">Стоимость</th>
-              <th className="px-5 py-3 font-medium">Статус</th>
+              <th className="px-5 py-3 font-medium">
+                {" "}
+                <T text="Стоимость" />{" "}
+              </th>
+              <th className="px-5 py-3 font-medium">
+                {" "}
+                <T text="Статус" />{" "}
+              </th>
               <th className="relative px-5 py-3 font-medium">
-                <span className="sr-only">Действия</span>
+                <span className="sr-only">
+                  {" "}
+                  <T text="Действия" />{" "}
+                </span>
               </th>
             </tr>
           </thead>
@@ -134,15 +160,24 @@ export function ContractsTable({
                   </p>
                 </td>
                 <td className="block break-words py-1 text-slate-600 lg:table-cell lg:max-w-52 lg:px-5 lg:py-5">
-                  <span className="font-medium lg:hidden">Объект: </span>
+                  <span className="font-medium lg:hidden">
+                    {" "}
+                    <T text="Объект:" />{" "}
+                  </span>
                   {row.property}
                 </td>
                 <td className="block py-1 text-xs text-slate-600 lg:table-cell lg:px-5 lg:py-5">
-                  <span className="font-medium lg:hidden">Создан: </span>
-                  {dateTime(row.createdAt)}
+                  <span className="font-medium lg:hidden">
+                    {" "}
+                    <T text="Создан:" />{" "}
+                  </span>
+                  <LocaleDate value={row.createdAt} />
                 </td>
                 <td className="block py-1 font-medium lg:table-cell lg:px-5 lg:py-5">
-                  <span className="lg:hidden">Стоимость: </span>
+                  <span className="lg:hidden">
+                    {" "}
+                    <T text="Стоимость:" />{" "}
+                  </span>
                   {money(row.rent)}
                 </td>
                 <td className="block py-1 lg:table-cell lg:px-5 lg:py-5">
@@ -154,7 +189,7 @@ export function ContractsTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label={`Копировать ссылку ${row.number}`}
+                        aria-label={`${translate("Копировать ссылку", language)} ${row.number}`}
                         onClick={() => copy(row.id)}
                         disabled={busy === row.id}
                       >
@@ -165,7 +200,7 @@ export function ContractsTable({
                       <Button asChild variant="ghost" size="icon">
                         <a
                           href={`/api/contracts/${row.id}/pdf`}
-                          aria-label={`Скачать PDF ${row.number}`}
+                          aria-label={`${translate("Скачать PDF", language)} ${row.number}`}
                         >
                           <Download />
                         </a>
@@ -174,7 +209,7 @@ export function ContractsTable({
                     <Button asChild variant="ghost" size="icon">
                       <Link
                         href={`/contracts/${row.id}`}
-                        aria-label={`Открыть ${row.number}`}
+                        aria-label={`${translate("Открыть", language)} ${row.number}`}
                       >
                         <ArrowUpRight />
                       </Link>
@@ -190,19 +225,25 @@ export function ContractsTable({
         <div className="py-16 text-center">
           <FileText className="mx-auto mb-3 text-slate-300" size={32} />
           <p className="font-medium">
-            {rows.length ? "Договоры не найдены" : "Пока нет договоров"}
+            <Localized>
+              {rows.length ? "Договоры не найдены" : "Пока нет договоров"}
+            </Localized>
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            {rows.length
-              ? "Измените поисковый запрос или фильтр."
-              : "Создайте первый договор, чтобы начать работу."}
+            <Localized>
+              {rows.length
+                ? "Измените поисковый запрос или фильтр."
+                : "Создайте первый договор, чтобы начать работу."}
+            </Localized>
           </p>
         </div>
       )}
       <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400">
-        {compact
-          ? "Последние созданные договоры"
-          : `Показано ${filtered.length} из ${rows.length} договоров`}
+        <Localized>
+          {compact
+            ? "Последние созданные договоры"
+            : `Показано ${filtered.length} из ${rows.length} договоров`}
+        </Localized>
       </div>
     </div>
   );

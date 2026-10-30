@@ -1,4 +1,7 @@
 "use client";
+
+import { T, Localized, translate, useLanguage } from "@/components/language";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -41,6 +44,7 @@ export function PropertiesManager({
 }: {
   properties: PropertyRow[];
 }) {
+  const language = useLanguage();
   const router = useRouter();
   const [editing, setEditing] = useState<PropertyRow | null>(null);
   const [open, setOpen] = useState(false);
@@ -138,7 +142,7 @@ export function PropertiesManager({
   return (
     <>
       <PageTitle
-        title="Объекты недвижимости"
+        title={translate("Объекты недвижимости", language)}
         description="Ваши квартиры, фотографии и цены. Выберите квартиру — данные сразу попадут в новый договор."
       >
         <div className="flex flex-wrap gap-2">
@@ -148,33 +152,44 @@ export function PropertiesManager({
             disabled={importing}
           >
             <Download />
-            {importing ? "Добавляем…" : "Добавить из каталога"}
+            <Localized>
+              {importing ? "Добавляем…" : "Добавить из каталога"}
+            </Localized>
           </Button>
           <Button onClick={() => edit(null)}>
-            <Plus />
-            Добавить объект
+            <Plus /> <T text="Добавить объект" />{" "}
           </Button>
         </div>
       </PageTitle>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2" aria-label="Статус квартир">
+        <div
+          className="flex flex-wrap gap-2"
+          aria-label={translate("Статус квартир", language)}
+        >
           <Button
             variant={showArchive ? "outline" : "default"}
             onClick={() => setShowArchive(false)}
             aria-pressed={!showArchive}
           >
-            Активные <span className="ml-1 opacity-70">{activeCount}</span>
+            {" "}
+            <T text="Активные" />{" "}
+            <span className="ml-1 opacity-70">{activeCount}</span>
           </Button>
           <Button
             variant={showArchive ? "default" : "outline"}
             onClick={() => setShowArchive(true)}
             aria-pressed={showArchive}
           >
-            В архиве <span className="ml-1 opacity-70">{archivedCount}</span>
+            {" "}
+            <T text="В архиве" />{" "}
+            <span className="ml-1 opacity-70">{archivedCount}</span>
           </Button>
         </div>
         <label className="relative block w-full sm:max-w-sm">
-          <span className="sr-only">Поиск по квартирам</span>
+          <span className="sr-only">
+            {" "}
+            <T text="Поиск по квартирам" />{" "}
+          </span>
           <Search
             size={17}
             className="pointer-events-none absolute left-3 top-3 text-slate-400"
@@ -183,7 +198,10 @@ export function PropertiesManager({
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Адрес, название или номер квартиры"
+            placeholder={translate(
+              "Адрес, название или номер квартиры",
+              language,
+            )}
             className="field pl-10"
           />
         </label>
@@ -195,7 +213,7 @@ export function PropertiesManager({
       )}
       {message && (
         <p role="status" className="success mb-5">
-          {message}
+          <Localized>{message}</Localized>
         </p>
       )}
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
@@ -213,7 +231,7 @@ export function PropertiesManager({
                 <Link
                   href={`/apartments/${apartment.slug}`}
                   className="relative block aspect-[16/10]"
-                  aria-label={`Фотографии и описание: ${property.name}`}
+                  aria-label={`${translate("Фотографии и описание:", language)} ${property.name}`}
                 >
                   <Image
                     src={cover.src}
@@ -223,11 +241,13 @@ export function PropertiesManager({
                     className="object-cover"
                   />
                   <span className="absolute bottom-3 left-3 rounded-md bg-white px-3 py-1 text-xs text-teal-800">
-                    {property.archived ? "В архиве" : "Из каталога"}
+                    <Localized>
+                      {property.archived ? "В архиве" : "Из каталога"}
+                    </Localized>
                   </span>
                   <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-slate-950/70 px-2.5 py-1 text-xs text-white">
                     <Images size={14} />
-                    {apartment.photos.length} фото
+                    {apartment.photos.length} <T text="фото" />{" "}
                   </span>
                 </Link>
               ) : (
@@ -238,9 +258,11 @@ export function PropertiesManager({
                     strokeWidth={1.3}
                   />
                   <span className="rounded-md bg-white/70 px-3 py-1 text-[11px] text-teal-800">
-                    {property.archived
-                      ? "В архиве"
-                      : propertyTypes[property.type]}
+                    <Localized>
+                      {property.archived
+                        ? "В архиве"
+                        : propertyTypes[property.type]}
+                    </Localized>
                   </span>
                 </div>
               )}
@@ -257,12 +279,14 @@ export function PropertiesManager({
                 {property.unit && (
                   <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
                     <DoorOpen size={15} />
-                    {property.type === "APARTMENT"
-                      ? "Квартира"
-                      : "Помещение"}{" "}
+                    <Localized>
+                      {property.type === "APARTMENT" ? "Квартира" : "Помещение"}
+                    </Localized>{" "}
                     {property.unit}
-                    {apartment &&
-                      ` · ${apartment.floor} этаж · ${apartment.entrance} подъезд`}
+                    <Localized>
+                      {apartment &&
+                        ` · ${apartment.floor} этаж · ${apartment.entrance} подъезд`}
+                    </Localized>
                   </p>
                 )}
                 {property.description && (
@@ -272,13 +296,19 @@ export function PropertiesManager({
                 )}
                 {apartment?.arrivalInstructions && (
                   <p className="mt-3 rounded-lg border border-teal-100 bg-teal-50 p-3 text-xs leading-5 text-teal-900">
-                    <span className="font-semibold">Вход в подъезд: </span>
+                    <span className="font-semibold">
+                      {" "}
+                      <T text="Вход в подъезд:" />{" "}
+                    </span>
                     {apartment.arrivalInstructions}
                   </p>
                 )}
                 {apartment && (
                   <div className="mt-4 rounded-xl bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">Цена в каталоге</p>
+                    <p className="text-xs text-slate-500">
+                      {" "}
+                      <T text="Цена в каталоге" />{" "}
+                    </p>
                     <ApartmentPrice
                       apartment={apartment}
                       className="mt-1 block text-lg font-semibold"
@@ -286,8 +316,8 @@ export function PropertiesManager({
                     {apartment.priceMin !== null &&
                       apartment.pricingPeriod === "unconfirmed" && (
                         <p className="mt-1 text-xs leading-5 text-amber-700">
-                          Период цены ещё не указан. Уточните сумму и сроки при
-                          оформлении.
+                          {" "}
+                          <T text="Период цены ещё не указан. Уточните сумму и сроки при оформлении." />{" "}
                         </p>
                       )}
                   </div>
@@ -295,16 +325,22 @@ export function PropertiesManager({
                 <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
                   <div>
                     <p className="text-xs leading-5 text-slate-500">
-                      Сумма для договора
+                      {" "}
+                      <T text="Сумма для договора" />{" "}
                     </p>
                     <p className="mt-1 text-sm font-semibold">
-                      {property.catalogSlug && !property.rent
-                        ? "Указать в договоре"
-                        : money(property.rent)}
+                      <Localized>
+                        {property.catalogSlug && !property.rent
+                          ? "Указать в договоре"
+                          : money(property.rent)}
+                      </Localized>
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs leading-5 text-slate-500">Депозит</p>
+                    <p className="text-xs leading-5 text-slate-500">
+                      {" "}
+                      <T text="Депозит" />{" "}
+                    </p>
                     <p className="mt-1 text-sm font-semibold">
                       {money(property.deposit)}
                     </p>
@@ -316,8 +352,7 @@ export function PropertiesManager({
                       href={`/apartments/${apartment.slug}`}
                       className="inline-flex items-center gap-1.5 hover:underline"
                     >
-                      <Images size={14} />
-                      Фото и подробности
+                      <Images size={14} /> <T text="Фото и подробности" />{" "}
                     </Link>
                     {apartment.mapUrl && (
                       <a
@@ -326,8 +361,8 @@ export function PropertiesManager({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 hover:underline"
                       >
-                        <ExternalLink size={14} />
-                        Открыть 2ГИС
+                        <ExternalLink size={14} />{" "}
+                        <T text="Открыть 2ГИС" />{" "}
                       </a>
                     )}
                   </div>
@@ -337,8 +372,7 @@ export function PropertiesManager({
                 {!property.archived && (
                   <Button className="w-full" asChild>
                     <Link href={`/contracts/new?propertyId=${property.id}`}>
-                      <FilePlus2 />
-                      Создать договор
+                      <FilePlus2 /> <T text="Создать договор" />{" "}
                     </Link>
                   </Button>
                 )}
@@ -348,8 +382,7 @@ export function PropertiesManager({
                     variant="ghost"
                     onClick={() => edit(property)}
                   >
-                    <Pencil />
-                    Изменить
+                    <Pencil /> <T text="Изменить" />{" "}
                   </Button>
                   <ConfirmAction
                     title={
@@ -362,7 +395,9 @@ export function PropertiesManager({
                     trigger={
                       <>
                         {property.archived ? <RotateCcw /> : <Archive />}
-                        {property.archived ? "Восстановить" : "В архив"}
+                        <Localized>
+                          {property.archived ? "Восстановить" : "В архив"}
+                        </Localized>
                       </>
                     }
                     onConfirm={() => archive(property)}
@@ -377,18 +412,22 @@ export function PropertiesManager({
         <div className="card py-20 text-center">
           <Building2 size={36} className="mx-auto mb-4 text-slate-300" />
           <p className="font-medium">
-            {search.trim()
-              ? "Квартиры не найдены"
-              : showArchive
-                ? "В архиве пока нет квартир"
-                : "Добавьте первую квартиру"}
+            <Localized>
+              {search.trim()
+                ? "Квартиры не найдены"
+                : showArchive
+                  ? "В архиве пока нет квартир"
+                  : "Добавьте первую квартиру"}
+            </Localized>
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            {search.trim()
-              ? "Попробуйте другой адрес, название или номер квартиры."
-              : showArchive
-                ? "Здесь будут квартиры, которые вы убрали из активного списка."
-                : "Можно добавить все ваши квартиры из каталога одним нажатием."}
+            <Localized>
+              {search.trim()
+                ? "Попробуйте другой адрес, название или номер квартиры."
+                : showArchive
+                  ? "Здесь будут квартиры, которые вы убрали из активного списка."
+                  : "Можно добавить все ваши квартиры из каталога одним нажатием."}
+            </Localized>
           </p>
           {search.trim() ? (
             <Button
@@ -396,7 +435,8 @@ export function PropertiesManager({
               variant="outline"
               onClick={() => setSearch("")}
             >
-              Сбросить поиск
+              {" "}
+              <T text="Сбросить поиск" />{" "}
             </Button>
           ) : (
             !showArchive && (
@@ -406,7 +446,9 @@ export function PropertiesManager({
                 disabled={importing}
               >
                 <Download />
-                {importing ? "Добавляем…" : "Добавить из каталога"}
+                <Localized>
+                  {importing ? "Добавляем…" : "Добавить из каталога"}
+                </Localized>
               </Button>
             )
           )}
@@ -420,11 +462,13 @@ export function PropertiesManager({
       >
         <DialogContent>
           <DialogTitle className="text-xl font-semibold">
-            {editing ? "Редактировать объект" : "Новый объект"}
+            <Localized>
+              {editing ? "Редактировать объект" : "Новый объект"}
+            </Localized>
           </DialogTitle>
           <DialogDescription className="mb-6 mt-2 text-sm text-slate-500">
-            Эти данные подставляются в новые договоры. Уже созданные договоры
-            сохраняют прежние данные.
+            {" "}
+            <T text="Эти данные подставляются в новые договоры. Уже созданные договоры сохраняют прежние данные." />{" "}
           </DialogDescription>
           <form onSubmit={save} className="space-y-4">
             {[
@@ -432,7 +476,9 @@ export function PropertiesManager({
               { name: "address", label: "Адрес", max: 300 },
             ].map((field) => (
               <label key={field.name} className="block">
-                <span className="label">{field.label}</span>
+                <span className="label">
+                  <Localized>{field.label}</Localized>
+                </span>
                 <input
                   className="field"
                   name={field.name}
@@ -446,7 +492,10 @@ export function PropertiesManager({
             ))}
             <div className="grid grid-cols-2 gap-4">
               <label>
-                <span className="label">Тип объекта</span>
+                <span className="label">
+                  {" "}
+                  <T text="Тип объекта" />{" "}
+                </span>
                 <select
                   className="field"
                   name="type"
@@ -454,13 +503,16 @@ export function PropertiesManager({
                 >
                   {Object.entries(propertyTypes).map(([value, label]) => (
                     <option key={value} value={value}>
-                      {label}
+                      <Localized>{label}</Localized>
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                <span className="label">Номер помещения</span>
+                <span className="label">
+                  {" "}
+                  <T text="Номер помещения" />{" "}
+                </span>
                 <input
                   className="field"
                   name="unit"
@@ -470,7 +522,10 @@ export function PropertiesManager({
               </label>
             </div>
             <label className="block">
-              <span className="label">Описание</span>
+              <span className="label">
+                {" "}
+                <T text="Описание" />{" "}
+              </span>
               <textarea
                 className="field min-h-24"
                 name="description"
@@ -480,7 +535,10 @@ export function PropertiesManager({
             </label>
             <div className="grid grid-cols-2 gap-4">
               <label>
-                <span className="label">Сумма аренды для договора, ₸</span>
+                <span className="label">
+                  {" "}
+                  <T text="Сумма аренды для договора, ₸" />{" "}
+                </span>
                 <input
                   className="field"
                   type="number"
@@ -493,7 +551,10 @@ export function PropertiesManager({
                 />
               </label>
               <label>
-                <span className="label">Депозит, ₸</span>
+                <span className="label">
+                  {" "}
+                  <T text="Депозит, ₸" />{" "}
+                </span>
                 <input
                   className="field"
                   type="number"
@@ -508,18 +569,17 @@ export function PropertiesManager({
             </div>
             {editing?.catalogSlug && (
               <p className="text-xs leading-5 text-slate-500">
-                Сумма для договора хранится отдельно от цены в публичном
-                каталоге. Если она не указана, заполните её при оформлении
-                договора.
+                {" "}
+                <T text="Сумма для договора хранится отдельно от цены в публичном каталоге. Если она не указана, заполните её при оформлении договора." />{" "}
               </p>
             )}
             {error && (
               <p role="alert" className="error">
-                {error}
+                <Localized>{error}</Localized>
               </p>
             )}
             <Button disabled={busy} className="w-full">
-              {busy ? "Сохраняем…" : "Сохранить объект"}
+              <Localized>{busy ? "Сохраняем…" : "Сохранить объект"}</Localized>
             </Button>
           </form>
         </DialogContent>

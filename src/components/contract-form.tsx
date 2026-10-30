@@ -1,4 +1,7 @@
 "use client";
+
+import { T, Localized, translate, useLanguage } from "@/components/language";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -59,6 +62,7 @@ export function ContractForm({
   selectedPropertyId?: string;
   templateDefaults?: ContractTemplate;
 }) {
+  const language = useLanguage();
   const router = useRouter();
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
   const [data, setData] = useState<ContractInput>(
@@ -134,10 +138,11 @@ export function ContractForm({
     return (
       <label key={key} className="block">
         <span className="label">
-          {label}
+          <Localized>{label}</Localized>
           {options.optional && (
             <span className="ml-1 font-normal text-slate-400">
-              (необязательно)
+              {" "}
+              <T text="(необязательно)" />{" "}
             </span>
           )}
         </span>
@@ -167,8 +172,7 @@ export function ContractForm({
         href={existing ? `/contracts/${existing.id}` : "/contracts"}
         className="mb-5 inline-flex items-center gap-2 text-xs text-slate-500 hover:text-teal-700"
       >
-        <ArrowLeft size={14} />
-        Назад к договорам
+        <ArrowLeft size={14} /> <T text="Назад к договорам" />{" "}
       </Link>
       <PageTitle
         title={existing ? "Редактировать черновик" : "Новый договор"}
@@ -181,16 +185,35 @@ export function ContractForm({
       <div className="mb-6">
         <DemoNotice compact />
       </div>
-      <ol aria-label="Порядок подготовки договора" className="mb-6 flex flex-wrap gap-2 text-xs text-slate-700">
-        {["Объект и срок", "Стороны", "Условия и сумма", "Проверка", "Сохранение"].map((step, index) => (
-          <li key={step} className="rounded-full border border-slate-200 bg-white px-3 py-2"><span className="mr-1 font-semibold text-amber-800">{index + 1}.</span> {step}</li>
+      <ol
+        aria-label={translate("Порядок подготовки договора", language)}
+        className="mb-6 flex flex-wrap gap-2 text-xs text-slate-700"
+      >
+        {[
+          "Объект и срок",
+          "Стороны",
+          "Условия и сумма",
+          "Проверка",
+          "Сохранение",
+        ].map((step, index) => (
+          <li
+            key={step}
+            className="rounded-full border border-slate-200 bg-white px-3 py-2"
+          >
+            <span className="mr-1 font-semibold text-amber-800">
+              {index + 1}.
+            </span>{" "}
+            <Localized>{step}</Localized>
+          </li>
         ))}
       </ol>
       {!properties.length && (
         <p className="error mb-5">
-          Для создания договора{" "}
+          {" "}
+          <T text="Для создания договора" />{" "}
           <Link href="/properties" className="underline">
-            добавьте действующий объект
+            {" "}
+            <T text="добавьте действующий объект" />{" "}
           </Link>
           .
         </p>
@@ -210,11 +233,14 @@ export function ContractForm({
               <>
                 <section className="card p-5 sm:p-7">
                   <h2 className="mb-5 flex items-center gap-2 text-base font-semibold">
-                    <Building2 size={18} className="text-teal-700" />
-                    Объект и срок аренды
+                    <Building2 size={18} className="text-teal-700" />{" "}
+                    <T text="Объект и срок аренды" />{" "}
                   </h2>
                   <label className="mb-5 block">
-                    <span className="label">Объект недвижимости</span>
+                    <span className="label">
+                      {" "}
+                      <T text="Объект недвижимости" />{" "}
+                    </span>
                     <select
                       required
                       className="field"
@@ -231,7 +257,10 @@ export function ContractForm({
                         }));
                       }}
                     >
-                      <option value="">Выберите объект</option>
+                      <option value="">
+                        {" "}
+                        <T text="Выберите объект" />{" "}
+                      </option>
                       {properties.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name}
@@ -256,12 +285,15 @@ export function ContractForm({
                         </p>
                         <p>
                           {property.address}
-                          {property.unit ? `, кв. ${property.unit}` : ""}
+                          <Localized>
+                            {property.unit ? `, кв. ${property.unit}` : ""}
+                          </Localized>
                         </p>
                         {apartment && (
                           <p>
-                            Подъезд {apartment.entrance} · Этаж{" "}
-                            {apartment.floor}
+                            {" "}
+                            <T text="Подъезд" /> {apartment.entrance}{" "}
+                            <T text="· Этаж" /> {apartment.floor}
                           </p>
                         )}
                       </div>
@@ -275,12 +307,12 @@ export function ContractForm({
                         rel="noopener noreferrer"
                         className="font-medium underline underline-offset-4"
                       >
-                        Фото, цена и расположение квартиры
+                        {" "}
+                        <T text="Фото, цена и расположение квартиры" />{" "}
                       </Link>
                       <p className="mt-2">
-                        Согласуйте даты и итоговую сумму с арендатором. Тариф из
-                        каталога не переносится в стоимость всего договора
-                        автоматически.
+                        {" "}
+                        <T text="Согласуйте даты и итоговую сумму с арендатором. Тариф из каталога не переносится в стоимость всего договора автоматически." />{" "}
                       </p>
                       {apartment.arrivalInstructions && (
                         <p className="mt-2 font-medium">
@@ -293,9 +325,11 @@ export function ContractForm({
                     {(["checkIn", "checkOut"] as const).map((key) => (
                       <label key={key}>
                         <span className="label">
-                          {key === "checkIn"
-                            ? "Дата и время заезда"
-                            : "Дата и время выезда"}
+                          <Localized>
+                            {key === "checkIn"
+                              ? "Дата и время заезда"
+                              : "Дата и время выезда"}
+                          </Localized>
                         </span>
                         <input
                           className="field"
@@ -317,9 +351,11 @@ export function ContractForm({
                     {(["rent", "deposit"] as const).map((key) => (
                       <label key={key}>
                         <span className="label">
-                          {key === "rent"
-                            ? "Аренда за весь срок, ₸"
-                            : "Депозит, ₸"}
+                          <Localized>
+                            {key === "rent"
+                              ? "Аренда за весь срок, ₸"
+                              : "Депозит, ₸"}
+                          </Localized>
                         </span>
                         <input
                           className="field"
@@ -335,17 +371,19 @@ export function ContractForm({
                     ))}
                   </div>
                   <p className="mt-4 text-[11px] text-slate-400">
-                    Время: Казахстан, Asia/Almaty (UTC+5). Стоимость за весь
-                    указанный период.
+                    {" "}
+                    <T text="Время: Казахстан, Asia/Almaty (UTC+5). Стоимость за весь указанный период." />{" "}
                   </p>
                 </section>
                 {(["tenant", "landlord"] as const).map((party) => (
                   <section key={party} className="card p-5 sm:p-7">
                     <details open={party === "tenant" || landlordOpen}>
                       <summary className="cursor-pointer text-base font-semibold">
-                        {party === "landlord"
-                          ? "Реквизиты арендодателя"
-                          : "Арендатор"}
+                        <Localized>
+                          {party === "landlord"
+                            ? "Реквизиты арендодателя"
+                            : "Арендатор"}
+                        </Localized>
                         {party === "landlord" && data.landlordName && (
                           <span className="ml-2 text-xs font-normal text-slate-500">
                             {data.landlordName}
@@ -354,17 +392,20 @@ export function ContractForm({
                       </summary>
                       {party === "landlord" && (
                         <p className="mt-3 text-xs leading-5 text-slate-500">
-                          {existing
-                            ? "Реквизиты сохранены в этом черновике."
-                            : "Данные взяты из шаблона."}{" "}
-                          Здесь их можно изменить только для этого договора.{" "}
+                          <Localized>
+                            {existing
+                              ? "Реквизиты сохранены в этом черновике."
+                              : "Данные взяты из шаблона."}
+                          </Localized>{" "}
+                          <T text="Здесь их можно изменить только для этого договора." />{" "}
                           <Link
                             href="/templates"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-teal-700 underline"
                           >
-                            Настроить шаблон
+                            {" "}
+                            <T text="Настроить шаблон" />{" "}
                           </Link>
                         </p>
                       )}
@@ -423,18 +464,19 @@ export function ContractForm({
                       <FileText
                         size={18}
                         className="mr-2 inline text-teal-700"
-                      />
-                      Условия договора
+                      />{" "}
+                      <T text="Условия договора" />{" "}
                     </summary>
                     <p className="mb-5 text-xs leading-5 text-slate-500">
-                      Условия уже заполнены. Любые изменения здесь относятся
-                      только к этому договору. Перед реальным применением нужна
-                      юридическая проверка.
+                      {" "}
+                      <T text="Условия уже заполнены. Любые изменения здесь относятся только к этому договору. Перед реальным применением нужна юридическая проверка." />{" "}
                     </p>
                     <div className="space-y-5">
                       {Object.entries(termLabels).map(([key, label]) => (
                         <label key={key} className="block">
-                          <span className="label">{label}</span>
+                          <span className="label">
+                            <Localized>{label}</Localized>
+                          </span>
                           <textarea
                             className="field min-h-28"
                             value={data[key as keyof typeof termLabels]}
@@ -450,7 +492,10 @@ export function ContractForm({
                         </label>
                       ))}
                       <label className="block">
-                        <span className="label">Дополнительные условия</span>
+                        <span className="label">
+                          {" "}
+                          <T text="Дополнительные условия" />{" "}
+                        </span>
                         <textarea
                           className="field min-h-24"
                           value={data.additionalTerms}
@@ -458,40 +503,58 @@ export function ContractForm({
                             update("additionalTerms", e.target.value)
                           }
                           maxLength={10000}
-                          placeholder="Например, правила проживания и возврата ключей"
+                          placeholder={translate(
+                            "Например, правила проживания и возврата ключей",
+                            language,
+                          )}
                         />
                       </label>
                     </div>
                   </details>
                   <p className="mt-3 text-xs leading-5 text-slate-500">
-                    Правила проживания и порядок передачи квартиры взяты из{" "}
-                    {existing ? "сохранённого черновика" : "вашего шаблона"}.
-                    Проверьте их в предварительном просмотре.
+                    {" "}
+                    <T text="Правила проживания и порядок передачи квартиры взяты из" />{" "}
+                    <Localized>
+                      {existing ? "сохранённого черновика" : "вашего шаблона"}
+                    </Localized>{" "}
+                    <T text=". Проверьте их в предварительном просмотре." />{" "}
                   </p>
                 </section>
               </>
             )}
           </div>
           <aside className="card p-6 xl:sticky xl:top-6">
-            <p className="eyebrow">ВАШ ДОГОВОР</p>
-            <h2 className="mt-3 text-lg font-semibold">Готовим к отправке</h2>
+            <p className="eyebrow">
+              {" "}
+              <T text="ВАШ ДОГОВОР" />{" "}
+            </p>
+            <h2 className="mt-3 text-lg font-semibold">
+              {" "}
+              <T text="Готовим к отправке" />{" "}
+            </h2>
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              Сначала сохраните черновик. Персональную ссылку можно создать
-              после проверки.
+              {" "}
+              <T text="Сначала сохраните черновик. Персональную ссылку можно создать после проверки." />{" "}
             </p>
             <div className="my-6 space-y-3 border-y border-slate-100 py-5">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Аренда</span>
+                <span className="text-slate-500">
+                  {" "}
+                  <T text="Аренда" />{" "}
+                </span>
                 <span className="font-medium">{money(data.rent)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Депозит</span>
+                <span className="text-slate-500">
+                  {" "}
+                  <T text="Депозит" />{" "}
+                </span>
                 <span className="font-medium">{money(data.deposit)}</span>
               </div>
             </div>
             <p className="mb-5 flex gap-2 text-xs leading-5 text-slate-500">
-              <Check size={15} className="mt-0.5 shrink-0 text-teal-700" />
-              После отправки текст фиксируется и больше не редактируется.
+              <Check size={15} className="mt-0.5 shrink-0 text-teal-700" />{" "}
+              <T text="После отправки текст фиксируется и больше не редактируется." />{" "}
             </p>
             <Button
               type="button"
@@ -503,15 +566,19 @@ export function ContractForm({
               }}
             >
               {preview ? <Pencil /> : <Eye />}
-              {preview ? "Вернуться к форме" : "Предварительный просмотр"}
+              <Localized>
+                {preview ? "Вернуться к форме" : "Предварительный просмотр"}
+              </Localized>
             </Button>
             <Button className="w-full" disabled={busy || !properties.length}>
               <Save />
-              {busy ? "Сохраняем…" : "Сохранить черновик"}
+              <Localized>
+                {busy ? "Сохраняем…" : "Сохранить черновик"}
+              </Localized>
             </Button>
             {error && (
               <p role="alert" className="error mt-4">
-                {error}
+                <Localized>{error}</Localized>
               </p>
             )}
           </aside>

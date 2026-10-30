@@ -1,9 +1,7 @@
+import { T, Localized } from "@/components/language";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Plus,
-  ArrowRight,
-} from "lucide-react";
+import { Plus, ArrowRight } from "lucide-react";
 import { requirePageAdmin } from "@/auth/session";
 import { listContracts } from "@/repositories/contracts";
 import { db } from "@/lib/db";
@@ -15,12 +13,22 @@ import { getContractTemplate } from "@/services/contract-template";
 import { findApartment } from "@/catalog/apartments";
 export default async function Dashboard() {
   const admin = await requirePageAdmin();
-  const [contracts, propertyCount, template, linkedProperties] = await Promise.all([
-    listContracts(admin.id),
-    db.property.count({ where: { ownerId: admin.id, archived: false } }),
-    getContractTemplate(admin.id),
-    db.property.findMany({ where: { ownerId: admin.id, archived: false, catalogSlug: { not: null } }, select: { id: true, name: true, address: true, catalogSlug: true }, take: 3, orderBy: { createdAt: "desc" } }),
-  ]);
+  const [contracts, propertyCount, template, linkedProperties] =
+    await Promise.all([
+      listContracts(admin.id),
+      db.property.count({ where: { ownerId: admin.id, archived: false } }),
+      getContractTemplate(admin.id),
+      db.property.findMany({
+        where: {
+          ownerId: admin.id,
+          archived: false,
+          catalogSlug: { not: null },
+        },
+        select: { id: true, name: true, address: true, catalogSlug: true },
+        take: 3,
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
   const templateReady = Boolean(
     template.landlordName && template.landlordPhone,
   );
@@ -56,8 +64,7 @@ export default async function Dashboard() {
       >
         <Button asChild>
           <Link href="/contracts/new">
-            <Plus />
-            Создать договор
+            <Plus /> <T text="Создать договор" />{" "}
           </Link>
         </Button>
       </PageTitle>
@@ -67,9 +74,13 @@ export default async function Dashboard() {
           className="card flex items-center gap-4 p-5 transition-colors hover:border-teal-300"
         >
           <div className="min-w-0">
-            <p className="font-medium">Квартиры: {propertyCount}</p>
+            <p className="font-medium">
+              {" "}
+              <T text="Квартиры:" /> {propertyCount}
+            </p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Выберите квартиру и нажмите «Создать договор».
+              {" "}
+              <T text="Выберите квартиру и нажмите «Создать договор»." />{" "}
             </p>
           </div>
           <ArrowRight size={17} className="ml-auto shrink-0 text-teal-700" />
@@ -80,14 +91,18 @@ export default async function Dashboard() {
         >
           <div className="min-w-0">
             <p className="font-medium">
-              {templateReady
-                ? "Шаблон договора подготовлен"
-                : "Подготовьте шаблон договора"}
+              <Localized>
+                {templateReady
+                  ? "Шаблон договора подготовлен"
+                  : "Подготовьте шаблон договора"}
+              </Localized>
             </p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              {templateReady
-                ? "Реквизиты и условия подставляются в новые договоры."
-                : "Сохраните реквизиты арендодателя один раз."}
+              <Localized>
+                {templateReady
+                  ? "Реквизиты и условия подставляются в новые договоры."
+                  : "Сохраните реквизиты арендодателя один раз."}
+              </Localized>
             </p>
           </div>
           <ArrowRight size={17} className="ml-auto shrink-0 text-teal-700" />
@@ -96,25 +111,82 @@ export default async function Dashboard() {
       <div className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-5">
         {stats.map(({ label, value }) => (
           <div key={label} className="card p-5">
-            <p className="text-xs font-medium leading-5 text-slate-600">{label}</p>
-            <p className="mt-3 text-3xl font-semibold tracking-tight">{value}</p>
+            <p className="text-xs font-medium leading-5 text-slate-600">
+              <Localized>{label}</Localized>
+            </p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight">
+              {value}
+            </p>
           </div>
         ))}
       </div>
       {linkedProperties.length > 0 && (
-        <section className="card mb-7 p-5" aria-labelledby="dashboard-properties-title">
+        <section
+          className="card mb-7 p-5"
+          aria-labelledby="dashboard-properties-title"
+        >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div><p className="eyebrow">ОБЪЕКТЫ</p><h2 id="dashboard-properties-title" className="mt-1 text-lg font-semibold">Квартиры из каталога</h2><p className="mt-1 text-xs text-slate-600">Ваши активные объекты, связанные с публичным каталогом.</p></div>
-            <Link href="/properties" className="inline-flex min-h-11 items-center text-sm font-medium text-blue-800 hover:underline">Все объекты</Link>
+            <div>
+              <p className="eyebrow">
+                {" "}
+                <T text="ОБЪЕКТЫ" />{" "}
+              </p>
+              <h2
+                id="dashboard-properties-title"
+                className="mt-1 text-lg font-semibold"
+              >
+                {" "}
+                <T text="Квартиры из каталога" />{" "}
+              </h2>
+              <p className="mt-1 text-xs text-slate-600">
+                {" "}
+                <T text="Ваши активные объекты, связанные с публичным каталогом." />{" "}
+              </p>
+            </div>
+            <Link
+              href="/properties"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-blue-800 hover:underline"
+            >
+              {" "}
+              <T text="Все объекты" />{" "}
+            </Link>
           </div>
           <div className="grid gap-3 lg:grid-cols-3">
             {linkedProperties.map((property) => {
-              const apartment = property.catalogSlug ? findApartment(property.catalogSlug) : null;
+              const apartment = property.catalogSlug
+                ? findApartment(property.catalogSlug)
+                : null;
               const photo = apartment?.photos[0];
-              return <Link href="/properties" key={property.id} className="flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 p-2 hover:bg-slate-50">
-                {photo ? <Image src={photo.src} alt="" width={72} height={64} className="h-16 w-[72px] shrink-0 rounded-md object-cover" /> : <span className="grid h-16 w-[72px] shrink-0 place-items-center rounded-md bg-slate-100 text-xs text-slate-600">Нет фото</span>}
-                <span className="min-w-0"><span className="block break-words text-sm font-medium text-slate-900">{property.name}</span><span className="mt-1 block break-words text-xs text-slate-600">{property.address}</span></span>
-              </Link>;
+              return (
+                <Link
+                  href="/properties"
+                  key={property.id}
+                  className="flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 p-2 hover:bg-slate-50"
+                >
+                  {photo ? (
+                    <Image
+                      src={photo.src}
+                      alt=""
+                      width={72}
+                      height={64}
+                      className="h-16 w-[72px] shrink-0 rounded-md object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-16 w-[72px] shrink-0 place-items-center rounded-md bg-slate-100 text-xs text-slate-600">
+                      {" "}
+                      <T text="Нет фото" />{" "}
+                    </span>
+                  )}
+                  <span className="min-w-0">
+                    <span className="block break-words text-sm font-medium text-slate-900">
+                      {property.name}
+                    </span>
+                    <span className="mt-1 block break-words text-xs text-slate-600">
+                      {property.address}
+                    </span>
+                  </span>
+                </Link>
+              );
             })}
           </div>
         </section>
@@ -124,16 +196,21 @@ export default async function Dashboard() {
       </div>
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Последние договоры</h2>
+          <h2 className="text-lg font-semibold">
+            {" "}
+            <T text="Последние договоры" />{" "}
+          </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Статусы учитывают срок действия ссылок на сервере
+            {" "}
+            <T text="Статусы учитывают срок действия ссылок на сервере" />{" "}
           </p>
         </div>
         <Link
           href="/contracts"
           className="flex items-center gap-1 text-xs font-medium text-teal-700"
         >
-          Все договоры <ArrowRight size={14} />
+          {" "}
+          <T text="Все договоры" /> <ArrowRight size={14} />
         </Link>
       </div>
       <ContractsTable
@@ -155,10 +232,11 @@ export default async function Dashboard() {
         >
           <div>
             <p className="text-sm font-medium">
-              {propertyCount} действующих объектов
+              {propertyCount} <T text="действующих объектов" />{" "}
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              Адрес подставится; итоговую сумму укажите за весь срок
+              {" "}
+              <T text="Адрес подставится; итоговую сумму укажите за весь срок" />{" "}
             </p>
           </div>
           <ArrowRight size={17} className="ml-auto text-slate-400" />
@@ -166,10 +244,12 @@ export default async function Dashboard() {
         <div className="card flex items-center gap-4 p-5">
           <div>
             <p className="text-sm font-medium">
-              Создать → отправить → проверить
+              {" "}
+              <T text="Создать → отправить → проверить" />{" "}
             </p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Клиенту не нужна регистрация. Достаточно персональной ссылки.
+              {" "}
+              <T text="Клиенту не нужна регистрация. Достаточно персональной ссылки." />{" "}
             </p>
           </div>
         </div>
