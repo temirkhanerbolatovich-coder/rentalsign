@@ -39,3 +39,15 @@ export function dayStatus(date: string, ranges: PublicAvailability[]) {
       ? "reserved"
       : "unknown";
 }
+
+/** Use the property's timezone on both server and browser at month boundaries. */
+export function calendarMonth(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "numeric",
+    timeZone: "Asia/Almaty",
+  }).formatToParts(now);
+  const year = Number(parts.find((part) => part.type === "year")!.value);
+  const month = Number(parts.find((part) => part.type === "month")!.value);
+  return new Date(Date.UTC(year, month - 1, 1));
+}

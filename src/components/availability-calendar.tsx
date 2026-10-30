@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { dayStatus, type PublicAvailability } from "@/lib/availability";
+import { calendarMonth, dayStatus, type PublicAvailability } from "@/lib/availability";
 import { T, translate, useLanguage } from "./language";
 import { clientApi } from "./client-api";
 export function AvailabilityCalendar({ slug }: { slug: string }) {
   const language = useLanguage();
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
-  });
+  const [month, setMonth] = useState(() => calendarMonth());
   const [ranges, setRanges] = useState<PublicAvailability[] | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -152,3 +149,4 @@ export function AvailabilityCalendar({ slug }: { slug: string }) {
     </section>
   );
 }
+

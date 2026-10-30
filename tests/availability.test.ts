@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { availabilitySchema, dayStatus } from "../src/lib/availability";
+import {
+  availabilitySchema,
+  dayStatus,
+  calendarMonth,
+} from "../src/lib/availability";
 test("calendar validates real inclusive dates and explicit statuses", () => {
   const input = {
     catalogSlug: "example",
@@ -24,5 +28,16 @@ test("calendar validates real inclusive dates and explicit statuses", () => {
   assert.equal(
     dayStatus("2026-11-04", [{ ...input, status: "reserved" }, input]),
     "occupied",
+  );
+});
+
+test("calendar month follows Kazakhstan across a UTC month boundary", () => {
+  assert.equal(
+    calendarMonth(new Date("2026-10-31T20:00:00Z")).toISOString(),
+    "2026-11-01T00:00:00.000Z",
+  );
+  assert.equal(
+    calendarMonth(new Date("2026-10-31T18:00:00Z")).toISOString(),
+    "2026-10-01T00:00:00.000Z",
   );
 });
