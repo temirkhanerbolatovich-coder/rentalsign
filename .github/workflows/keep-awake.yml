@@ -1,7 +1,5 @@
-name: Keep RentalSign awake
+name: Manual RentalSign health check
 on:
-  schedule:
-    - cron: '3 * * * *'
   workflow_dispatch:
 permissions: {}
 jobs:
