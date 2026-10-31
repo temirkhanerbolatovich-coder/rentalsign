@@ -10,6 +10,12 @@ const interfaceFont = localFont({
   weight: "100 900",
   display: "swap",
 });
+const displayFont = localFont({
+  src: "./fonts/Onest-Variable.woff2",
+  variable: "--font-display",
+  weight: "100 900",
+  display: "swap",
+});
 export const metadata: Metadata = {
   title: {
     default: "Qutty Qonaq — договоры аренды",
@@ -29,7 +35,7 @@ export default async function RootLayout({
   const language =
     savedLanguage === "kk" || savedLanguage === "en" ? savedLanguage : "ru";
   return (
-    <html lang={language} className={interfaceFont.variable}>
+    <html lang={language} className={`${interfaceFont.variable} ${displayFont.variable}`}>
       <body>
         <LanguageProvider initialLanguage={language}>
           {children}

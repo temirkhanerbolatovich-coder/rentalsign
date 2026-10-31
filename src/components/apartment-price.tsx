@@ -19,7 +19,7 @@ export function ApartmentPrice({
         : `${currency.format(priceMin)} ₸`;
 
   return (
-    <span className={className}>
+    <span className={`apartment-price ${className ?? ""}`}>
       <T text={price} />
       {priceMin !== null && pricingPeriod !== "unconfirmed" && (
         <span className="ml-1 text-sm font-normal text-slate-500">

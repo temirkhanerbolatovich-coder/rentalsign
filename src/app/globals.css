@@ -13,6 +13,12 @@ body {
   font-family: var(--font-interface), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+h1, h2, h3, .apartment-price {
+  font-family: var(--font-display), var(--font-interface), Arial, sans-serif;
+}
+.document h1, .document h2, .document h3 {
+  font-family: inherit;
+}
 h1, h2 {
   text-wrap: balance;
 }
