@@ -198,3 +198,8 @@ button:disabled {
   .catalog-header .text-base { font-size: 14px; }
   .catalog-header img { width: 44px; height: 44px; }
 }
+
+.guest-details summary { list-style: none; }
+.guest-details summary::-webkit-details-marker { display: none; }
+.guest-details[open] .guest-details-chevron { transform: rotate(180deg); }
+.guest-details summary:hover { background: #faf3e5; }

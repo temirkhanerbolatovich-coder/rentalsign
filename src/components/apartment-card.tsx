@@ -1,6 +1,6 @@
 "use client";
 import { T, translate, useLanguage } from "@/components/language";
-import Image from "next/image";
+import { ApartmentPhoto } from "./apartment-photo";
 import Link from "next/link";
 import { ArrowUpRight, Images, Layers3, MapPin } from "lucide-react";
 import type { Apartment } from "@/catalog/apartments";
@@ -25,10 +25,9 @@ export function ApartmentCard({
         className="relative block aspect-[4/3] shrink-0 overflow-hidden bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
       >
         {photo ? (
-          <Image
+          <ApartmentPhoto
             src={photo.src}
             alt={photo.alt}
-            fill
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
             preload={preload}
             className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.025]"

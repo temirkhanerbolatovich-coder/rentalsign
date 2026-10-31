@@ -11,6 +11,8 @@ import {
   Layers3,
   MapPin,
   DoorOpen,
+  Wifi,
+  ChevronDown,
 } from "lucide-react";
 import { apartments, findApartment } from "@/catalog/apartments";
 import { ApartmentGallery } from "@/components/apartment-gallery";
@@ -46,152 +48,65 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
     <>
       <Link
         href="/apartments"
-        className="mb-7 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-800"
+        className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-amber-800 hover:underline"
       >
-        <ArrowLeft size={16} aria-hidden="true" />{" "}
-        <T text="Все квартиры" />{" "}
+        <ArrowLeft size={16} aria-hidden="true" /> <T text="Все квартиры" />
       </Link>
-      <div className="mb-7">
-        {apartment.residentialComplex && (
-          <p className="mb-2 text-sm font-medium text-blue-800">
-            {apartment.residentialComplex}
-          </p>
-        )}
-        <h1 className="title-reveal text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-          <T text={apartment.title} />
-        </h1>
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-slate-600">
-          <span>
-            {" "}
-            <T text="Квартира" /> {apartment.unit}
-          </span>
-          <span>
-            {" "}
-            <T text="Подъезд" /> {apartment.entrance}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Layers3 size={16} aria-hidden="true" /> <T text="Этаж" />{" "}
-            {apartment.floor}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Images size={16} aria-hidden="true" /> {apartment.photos.length}{" "}
-            <T text="фото" />{" "}
-          </span>
-          {apartment.mapUrl && (
-            <a
-              href={apartment.mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-medium text-blue-800 hover:underline"
-              aria-label="Открыть в 2ГИС (новая вкладка)"
-            >
-              <MapPin size={16} aria-hidden="true" />{" "}
-              <T text="Открыть в 2ГИС" />{" "}
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </a>
-          )}
-        </div>
-      </div>
-
-      <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_350px] lg:gap-9">
+      <header className="mb-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div className="min-w-0">
-          <ApartmentGallery
-            photos={apartment.photos}
-            address={apartment.address}
-          />
-          <AvailabilityCalendar slug={apartment.slug} />
-          <section
-            className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
-            aria-labelledby="apartment-address-title"
-          >
-            <h2
-              id="apartment-address-title"
-              className="text-lg font-semibold text-slate-900"
-            >
-              {" "}
-              <T text="Адрес и расположение" />{" "}
-            </h2>
-            <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600">
-              <MapPin
-                size={17}
-                className="mt-0.5 shrink-0 text-blue-800"
-                aria-hidden="true"
-              />{" "}
-              {apartment.address}
+          {apartment.residentialComplex && (
+            <p className="mb-2 text-sm font-medium text-amber-800">
+              {apartment.residentialComplex}
             </p>
-            {apartment.residentialComplex && (
-              <p className="mt-2 text-sm text-slate-500">
-                {apartment.residentialComplex}
-              </p>
-            )}
-            {apartment.mapUrl && (
-              <Button asChild variant="outline" className="mt-4">
-                <a
-                  href={apartment.mapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {" "}
-                  <T text="Посмотреть на карте 2ГИС" />{" "}
-                  <ArrowUpRight aria-hidden="true" />
-                </a>
-              </Button>
-            )}
-            {apartment.arrivalInstructions && (
-              <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-950">
-                  <DoorOpen size={17} aria-hidden="true" />{" "}
-                  <T text="Информация для гостей" />{" "}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-amber-950">
-                  <T text={apartment.arrivalInstructions} />
-                </p>
-              </div>
-            )}
-          </section>
-          {apartment.wifi && (
-            <section
-              className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
-              aria-labelledby="wifi-title"
-            >
-              <h2
-                id="wifi-title"
-                className="text-lg font-semibold text-slate-900"
-              >
-                {" "}
-                <T text="Wi-Fi для гостей" />{" "}
-              </h2>
-              <p className="mt-3 text-sm text-slate-600">
-                {" "}
-                <T text="Сеть:" />{" "}
-                <span className="font-medium text-slate-900 break-all">
-                  {apartment.wifi.network}
-                </span>
-              </p>
-              <p className="mt-2 text-sm text-slate-600">
-                {" "}
-                <T text="Пароль:" />{" "}
-                <span className="font-medium text-slate-900 break-all">
-                  {apartment.wifi.password}
-                </span>
-              </p>
-            </section>
           )}
+          <h1 className="title-reveal text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            <T text={apartment.title} />
+          </h1>
+          <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600">
+            <MapPin
+              size={17}
+              className="mt-0.5 shrink-0 text-amber-800"
+              aria-hidden="true"
+            />
+            {apartment.address}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+            <span>
+              <T text="Квартира" /> {apartment.unit}
+            </span>
+            <span>
+              <T text="Подъезд" /> {apartment.entrance}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Layers3 size={16} aria-hidden="true" /> <T text="Этаж" />{" "}
+              {apartment.floor}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Images size={16} aria-hidden="true" /> {apartment.photos.length}{" "}
+              <T text="фото" />
+            </span>
+            {apartment.mapUrl && (
+              <a
+                href={apartment.mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-1.5 font-medium text-amber-800 hover:underline"
+              >
+                <T text="Открыть в 2ГИС" />
+                <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+            )}
+          </div>
         </div>
-
-        <aside
-          className="rounded-2xl border border-slate-200 bg-white p-6 lg:sticky lg:top-7"
-          aria-label="Цена и условия аренды"
-        >
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
-            {" "}
-            <T text="Стоимость аренды" />{" "}
+        <div className="rounded-2xl border border-amber-200/60 bg-[#fff9eb] px-5 py-4 lg:max-w-[340px]">
+          <p className="mb-1 text-xs text-amber-900">
+            <T text="Стоимость аренды" />
           </p>
           <ApartmentPrice
             apartment={apartment}
-            className="block text-3xl font-semibold tracking-tight text-slate-900"
+            className="block text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl"
           />
-          <p className="mt-3 text-sm leading-6 text-slate-500">
+          <p className="mt-2 text-xs leading-5 text-slate-600">
             {apartment.priceMin === null ? (
               <T text="Стоимость уточняется у владельца." />
             ) : (
@@ -201,49 +116,161 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               <T text="Период аренды и итоговую стоимость нужно согласовать." />
             )}
           </p>
-          <div className="my-5 border-t border-slate-100" />
-          <h2 className="text-sm font-semibold text-slate-900">
-            {" "}
-            <T text="Понравилась квартира?" />{" "}
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            {" "}
-            <T text="Сначала согласуйте с владельцем даты, стоимость и условия проживания. После этого владелец подготовит договор и отправит персональную ссылку." />{" "}
-          </p>
-          <div className="mt-5 rounded-xl bg-slate-50 p-4">
-            <p className="text-xs font-medium text-slate-600">
-              {" "}
-              <T text="Для владельца квартиры" />{" "}
+        </div>
+      </header>
+
+      <ApartmentGallery photos={apartment.photos} address={apartment.address} />
+
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
+        <div className="min-w-0 space-y-6">
+          <AvailabilityCalendar slug={apartment.slug} />
+          {(apartment.arrivalInstructions || apartment.wifi) && (
+            <section
+              className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
+              aria-labelledby="guest-information-title"
+            >
+              <h2
+                id="guest-information-title"
+                className="mb-4 text-lg font-semibold text-slate-900"
+              >
+                <T text="Информация для гостей" />
+              </h2>
+              <div className="space-y-3">
+                {apartment.arrivalInstructions && (
+                  <details className="guest-details rounded-xl border border-stone-200/80 bg-[#fdfbf7]">
+                    <summary className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 focus-visible:outline-2 focus-visible:outline-amber-800">
+                      <DoorOpen
+                        size={19}
+                        className="shrink-0 text-amber-800"
+                        aria-hidden="true"
+                      />
+                      <span className="flex-1">
+                        <T text="Вход и домофон" />
+                      </span>
+                      <ChevronDown
+                        size={17}
+                        className="guest-details-chevron shrink-0"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <p className="border-t border-stone-200/60 px-4 py-4 text-sm leading-7 text-slate-600">
+                      <T text={apartment.arrivalInstructions} />
+                    </p>
+                  </details>
+                )}
+                {apartment.wifi && (
+                  <details className="guest-details rounded-xl border border-stone-200/80 bg-[#fdfbf7]">
+                    <summary className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 focus-visible:outline-2 focus-visible:outline-amber-800">
+                      <Wifi
+                        size={19}
+                        className="shrink-0 text-amber-800"
+                        aria-hidden="true"
+                      />
+                      <span className="flex-1">
+                        <T text="Wi-Fi для гостей" />
+                      </span>
+                      <ChevronDown
+                        size={17}
+                        className="guest-details-chevron shrink-0"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <dl className="space-y-3 border-t border-stone-200/60 px-4 py-4 text-sm">
+                      <div>
+                        <dt className="text-xs text-slate-500">
+                          <T text="Сеть:" />
+                        </dt>
+                        <dd className="mt-1 break-all font-medium text-slate-900">
+                          {apartment.wifi.network}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-slate-500">
+                          <T text="Пароль:" />
+                        </dt>
+                        <dd className="mt-1 break-all font-medium text-slate-900">
+                          {apartment.wifi.password}
+                        </dd>
+                      </div>
+                    </dl>
+                  </details>
+                )}
+              </div>
+            </section>
+          )}
+        </div>
+        <aside
+          className="space-y-5 lg:sticky lg:top-6"
+          aria-labelledby="apartment-stay-title"
+        >
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <h2
+              id="apartment-stay-title"
+              className="text-lg font-semibold text-slate-900"
+            >
+              <T text="Понравилась квартира?" />
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              <T text="Сначала согласуйте с владельцем даты, стоимость и условия проживания. После этого владелец подготовит договор и отправит персональную ссылку." />
             </p>
-            <Button asChild className="mt-3 w-full">
+            {apartment.mapUrl && (
+              <Button
+                asChild
+                variant="outline"
+                className="mt-5 w-full whitespace-normal text-center"
+              >
+                <a
+                  href={apartment.mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Открыть в 2ГИС (новая вкладка)"
+                >
+                  <MapPin aria-hidden="true" />
+                  <T text="Посмотреть на карте 2ГИС" />
+                  <ArrowUpRight className="shrink-0" aria-hidden="true" />
+                </a>
+              </Button>
+            )}
+          </section>
+          <section
+            className="rounded-2xl border border-dashed border-stone-300/80 p-5"
+            aria-labelledby="apartment-owner-title"
+          >
+            <h2
+              id="apartment-owner-title"
+              className="flex items-center gap-2 text-sm font-semibold text-slate-700"
+            >
+              <FileText size={17} aria-hidden="true" />
+              <T text="Для владельца квартиры" />
+            </h2>
+            <p className="mt-2 text-xs leading-6 text-slate-500">
+              <T text="После входа выбранная квартира будет передана в форму договора." />
+            </p>
+            <Button
+              asChild
+              variant="outline"
+              className="mt-4 w-full whitespace-normal"
+            >
               <Link
                 href={`/login?apartment=${encodeURIComponent(apartment.slug)}`}
               >
-                <FileText aria-hidden="true" />{" "}
-                <T text="Подготовить договор" />{" "}
+                <T text="Подготовить договор" />
+                <ArrowUpRight size={16} aria-hidden="true" />
               </Link>
             </Button>
-            <p className="mt-2 text-xs leading-5 text-slate-500">
-              {" "}
-              <T text="После входа выбранная квартира будет передана в форму договора." />{" "}
-            </p>
-          </div>
-          <div className="mt-4">
-            <DemoNotice compact />
-          </div>
+          </section>
         </aside>
       </div>
 
       <section
-        className="mt-10 border-t border-slate-200 pt-8"
+        className="mt-10 border-t border-stone-200 pt-8"
         aria-labelledby="apartment-contract-flow-title"
       >
         <h2
           id="apartment-contract-flow-title"
           className="text-xl font-semibold tracking-tight text-slate-900"
         >
-          {" "}
-          <T text="От выбора квартиры к договору" />{" "}
+          <T text="От выбора квартиры к договору" />
         </h2>
         <ol className="mt-5 grid gap-5 sm:grid-cols-3">
           {[
@@ -261,7 +288,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
             },
           ].map((step, index) => (
             <li key={step.title} className="flex items-start gap-3">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-amber-50 text-sm font-semibold text-amber-950">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-amber-100/70 text-sm font-semibold text-amber-950">
                 {index + 1}
               </span>
               <div>

@@ -209,6 +209,7 @@ test("corrected apartment details expose the confirmed addresses, photo sets and
       )
       .toBeGreaterThan(0);
     if (apartment.unit === "10") {
+      await page.locator("summary").filter({ hasText: "Вход и домофон" }).click();
       await expect(
         page.getByText(/10.*видеодомофон|видеодомофон.*10/i),
       ).toBeVisible();

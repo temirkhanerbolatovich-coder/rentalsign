@@ -2,10 +2,11 @@
 
 import { T, translate, useLanguage } from "@/components/language";
 
-import Image from "next/image";
+import { ApartmentPhoto } from "./apartment-photo";
+import styles from "./apartment-gallery.module.css";
 import { useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import type { ApartmentPhoto } from "@/catalog/apartments";
+import type { ApartmentPhoto as CatalogPhoto } from "@/catalog/apartments";
 import {
   Dialog,
   DialogContent,
@@ -20,13 +21,12 @@ export function ApartmentGallery({
   photos,
   address,
 }: {
-  photos: ApartmentPhoto[];
+  photos: CatalogPhoto[];
   address: string;
 }) {
   const language = useLanguage();
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
-  const [failedPhotos, setFailedPhotos] = useState<string[]>([]);
   const touchStart = useRef<number | null>(null);
   const photo = photos[index];
 
@@ -54,11 +54,6 @@ export function ApartmentGallery({
     if (Math.abs(distance) > 50 && photos.length > 1)
       movePhoto(distance < 0 ? 1 : -1);
   }
-  function markFailed(src: string) {
-    setFailedPhotos((current) =>
-      current.includes(src) ? current : [...current, src],
-    );
-  }
 
   if (!photo) return null;
 
@@ -70,67 +65,92 @@ export function ApartmentGallery({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-          <DialogTrigger asChild>
-            <button
-              type="button"
-              className="relative block aspect-[4/3] w-full focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-teal-700"
-              aria-label={`${translate("Открыть фото", language)} ${index + 1} ${translate("на весь экран", language)}`}
-            >
-              {failedPhotos.includes(photo.src) ? (
-                <span className="grid h-full place-items-center text-sm text-slate-600">
-                  {" "}
-                  <T text="Не удалось загрузить фотографию" />{" "}
-                </span>
-              ) : (
-                <Image
-                  key={photo.src}
+        <div
+          className={cn(styles.frame, photos.length < 3 && "lg:!grid-cols-1")}
+        >
+          <div className={styles.main}>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="relative block aspect-[4/3] w-full focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-teal-700"
+                aria-label={`${translate("Открыть фото", language)} ${index + 1} ${translate("на весь экран", language)}`}
+              >
+                <ApartmentPhoto
                   src={photo.src}
                   alt={photo.alt}
-                  fill
                   sizes="(max-width: 1023px) 100vw, 65vw"
                   preload={index === 0}
-                  onError={() => markFailed(photo.src)}
-                  className="photo-reveal object-contain"
+                  className="object-contain"
                 />
-              )}
-              <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-800 shadow-sm">
-                <Expand size={15} aria-hidden="true" />{" "}
-                <T text="На весь экран" />{" "}
-              </span>
-            </button>
-          </DialogTrigger>
-          {photos.length > 1 && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => movePhoto(-1)}
-                aria-label={translate("Предыдущее фото", language)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/95 shadow-sm"
-              >
-                <ChevronLeft aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => movePhoto(1)}
-                aria-label={translate("Следующее фото", language)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/95 shadow-sm"
-              >
-                <ChevronRight aria-hidden="true" />
-              </Button>
-            </>
+                <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-800 shadow-sm">
+                  <Expand size={15} aria-hidden="true" />{" "}
+                  <T text="На весь экран" />{" "}
+                </span>
+              </button>
+            </DialogTrigger>
+            {photos.length > 1 && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => movePhoto(-1)}
+                  aria-label={translate("Предыдущее фото", language)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/95 shadow-sm"
+                >
+                  <ChevronLeft aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => movePhoto(1)}
+                  aria-label={translate("Следующее фото", language)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/95 shadow-sm"
+                >
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </>
+            )}
+            <p
+              className="pointer-events-none absolute left-4 top-4 rounded-lg bg-slate-950/70 px-3 py-1.5 text-xs font-medium text-white"
+              aria-live="polite"
+            >
+              {" "}
+              <T text="Фото" /> {index + 1} <T text="из" /> {photos.length}
+            </p>
+          </div>
+          {photos.length > 2 && (
+            <div className={styles.previews}>
+              {[1, 2].map((offset) => {
+                const previewIndex = (index + offset) % photos.length;
+                const preview = photos[previewIndex];
+                return (
+                  <button
+                    key={preview.src}
+                    type="button"
+                    className="relative min-h-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800"
+                    aria-label={`${translate("Выбрать фото", language)} ${previewIndex + 1}`}
+                    onClick={() => setIndex(previewIndex)}
+                  >
+                    <ApartmentPhoto
+                      src={preview.src}
+                      alt=""
+                      sizes="33vw"
+                      className="object-cover"
+                      compact
+                    />
+                    <span
+                      className="absolute bottom-3 right-3 rounded-lg bg-white/95 px-2 py-1 text-xs font-medium text-stone-700"
+                      aria-hidden="true"
+                    >
+                      <T text="Фото" /> {previewIndex + 1}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           )}
-          <p
-            className="pointer-events-none absolute left-4 top-4 rounded-lg bg-slate-950/70 px-3 py-1.5 text-xs font-medium text-white"
-            aria-live="polite"
-          >
-            {" "}
-            <T text="Фото" /> {index + 1} <T text="из" /> {photos.length}
-          </p>
         </div>
         <div
           className="mt-3 flex gap-2 overflow-x-auto p-1 -mx-1"
@@ -150,10 +170,10 @@ export function ApartmentGallery({
                   : "border-transparent opacity-65 hover:opacity-100",
               )}
             >
-              <Image
+              <ApartmentPhoto
+                compact
                 src={item.src}
                 alt=""
-                fill
                 sizes="96px"
                 className="object-cover"
               />
@@ -180,22 +200,12 @@ export function ApartmentGallery({
           <T text=". Стрелки ← → переключают фотографии, Esc закрывает просмотр." />{" "}
         </DialogDescription>
         <div className="relative h-[58dvh] rounded-lg bg-slate-950 sm:h-[64dvh]">
-          {failedPhotos.includes(photo.src) ? (
-            <p className="grid h-full place-items-center text-sm text-white">
-              {" "}
-              <T text="Не удалось загрузить фотографию" />{" "}
-            </p>
-          ) : (
-            <Image
-              key={photo.src}
-              src={photo.src}
-              alt={photo.alt}
-              fill
-              sizes="95vw"
-              onError={() => markFailed(photo.src)}
-              className="photo-reveal object-contain"
-            />
-          )}
+          <ApartmentPhoto
+            src={photo.src}
+            alt={photo.alt}
+            sizes="95vw"
+            className="object-contain"
+          />
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">
           <Button
