@@ -177,3 +177,24 @@ button:disabled {
     font-size: 16px !important;
   }
 }
+
+/* Warm public catalog palette; the owner workspace and documents keep their theme. */
+.catalog-shell { background: #faf7f1; color: #493e34; }
+.catalog-shell :where(.text-slate-900) { color: #35281e; }
+.catalog-shell :where(.text-slate-800, .text-slate-700) { color: #514438; }
+.catalog-shell :where(.text-slate-600) { color: #706357; }
+.catalog-shell :where(.text-slate-500) { color: #7b7065; }
+.catalog-shell :where(.border-slate-200, .border-slate-100) { border-color: #e9e2d7; }
+.catalog-shell :where(.bg-slate-50) { background-color: #f7f3ec; }
+.catalog-shell :where(.bg-slate-100) { background-color: #f0ebe2; }
+.catalog-header { background: #fffefb; }
+.catalog-header img { width: 52px; height: 52px; }
+.catalog-header .light-navigation { border: 0; background: #f8f4ec; box-shadow: none; }
+.catalog-header .light-navigation-link:last-of-type { color: #74685b; font-weight: 500; }
+.catalog-header .light-navigation-link:last-of-type:hover { color: #603d0e; }
+@media (max-width: 639px) {
+  .catalog-header .light-navigation-link { flex: 1; padding-inline: 6px; }
+  .catalog-header .light-navigation { width: 100%; }
+  .catalog-header .text-base { font-size: 14px; }
+  .catalog-header img { width: 44px; height: 44px; }
+}

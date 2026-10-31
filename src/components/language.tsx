@@ -5,6 +5,7 @@ import {
   useEffect,
   useSyncExternalStore,
 } from "react";
+import { usePathname } from "next/navigation";
 import translations from "@/lib/translations.json";
 export type Language = "ru" | "kk" | "en";
 const LanguageContext = createContext<Language>("ru");
@@ -57,6 +58,7 @@ export function LanguageProvider({
   children: React.ReactNode;
   initialLanguage?: Language;
 }) {
+  const pathname = usePathname();
   const language = useSyncExternalStore(
     subscribe,
     readLanguage,
@@ -67,35 +69,13 @@ export function LanguageProvider({
   }, [language]);
   return (
     <LanguageContext.Provider value={language}>
-      <div className="border-b border-amber-100 bg-[#fffbed] px-4 py-1.5 text-right">
-        <div
-          className="mx-auto flex max-w-7xl justify-end gap-1"
-          role="group"
-          aria-label="Language / Тіл / Язык"
-        >
-          {(
-            [
-              ["ru", "РУС"],
-              ["kk", "ҚАЗ"],
-              ["en", "EN"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={language === value}
-              onClick={() => {
-                document.cookie = `qutty-language=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
-                document.documentElement.lang = value;
-                window.dispatchEvent(new Event("qutty-language-change"));
-              }}
-              className={`min-h-9 min-w-11 rounded-lg px-2 text-xs font-semibold ${language === value ? "bg-amber-200 text-amber-950" : "text-slate-600 hover:bg-amber-100"}`}
-            >
-              {label}
-            </button>
-          ))}
+      {!pathname.startsWith("/apartments") && (
+        <div className="border-b border-amber-100 bg-[#fffbed] px-4 py-1.5 text-right">
+          <div className="mx-auto flex max-w-7xl justify-end">
+            <LanguageSwitcher />
+          </div>
         </div>
-      </div>
+      )}
       {children}
     </LanguageContext.Provider>
   );
@@ -120,4 +100,37 @@ export function LocaleDate({ value }: { value: string | Date }) {
     language === "kk" ? "kk-KZ" : language === "en" ? "en-GB" : "ru-KZ",
     { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Almaty" },
   ).format(new Date(value));
+}
+
+export function LanguageSwitcher() {
+  const language = useLanguage();
+  return (
+    <div
+      className="language-switcher inline-flex items-center gap-0.5 rounded-xl border border-amber-100 bg-white/80 p-1"
+      role="group"
+      aria-label="Language / Тіл / Язык"
+    >
+      {(
+        [
+          ["ru", "РУС"],
+          ["kk", "ҚАЗ"],
+          ["en", "EN"],
+        ] as const
+      ).map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={language === value}
+          onClick={() => {
+            document.cookie = `qutty-language=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
+            document.documentElement.lang = value;
+            window.dispatchEvent(new Event("qutty-language-change"));
+          }}
+          className={`min-h-11 min-w-9 rounded-lg px-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800 ${language === value ? "bg-amber-100 text-amber-950" : "text-slate-600 hover:bg-amber-50"}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 }

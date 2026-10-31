@@ -18,11 +18,11 @@ export function ApartmentCard({
   const href = `/apartments/${apartment.slug}`;
 
   return (
-    <article className="apartment-card group overflow-hidden rounded-xl border border-slate-200 bg-white hover:shadow-md hover:shadow-slate-200/50">
+    <article className="apartment-card group flex h-full flex-col overflow-hidden rounded-[20px] border border-stone-200/80 bg-white shadow-[0_3px_16px_-8px_#6b4b2525]">
       <Link
         href={href}
         aria-label={`${translate("Фотографии и описание:", language)} ${translate(apartment.title, language)}`}
-        className="relative block aspect-[4/3] overflow-hidden bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+        className="relative block aspect-[4/3] shrink-0 overflow-hidden bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
       >
         {photo ? (
           <Image
@@ -44,27 +44,31 @@ export function ApartmentCard({
           {apartment.photos.length} <T text="фото" />{" "}
         </span>
       </Link>
-      <div className="p-5">
-        <ApartmentPrice
-          apartment={apartment}
-          className="block text-xl font-semibold tracking-tight text-slate-900"
-        />
-        {apartment.priceMin !== null &&
-          apartment.pricingPeriod === "unconfirmed" && (
-            <p className="mt-1 text-xs text-slate-600">
-              {" "}
-              <T text="Период аренды уточняется" />{" "}
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="min-h-[72px]">
+          <ApartmentPrice
+            apartment={apartment}
+            className="block text-2xl font-semibold tracking-tight text-slate-900"
+          />
+          {apartment.priceMin !== null &&
+            apartment.pricingPeriod === "unconfirmed" && (
+              <p className="mt-1 text-xs text-slate-600">
+                {" "}
+                <T text="Период аренды уточняется" />{" "}
+              </p>
+            )}
+        </div>
+        <div className="mt-1 min-h-5">
+          {apartment.residentialComplex && (
+            <p className="text-xs font-medium text-amber-800">
+              {apartment.residentialComplex}
             </p>
           )}
-        {apartment.residentialComplex && (
-          <p className="mt-4 text-xs font-medium text-amber-800">
-            {apartment.residentialComplex}
-          </p>
-        )}
-        <h2 className="mt-3 text-lg font-semibold leading-snug tracking-tight text-slate-900">
+        </div>
+        <h2 className="mt-2 sm:min-h-14 text-lg font-semibold leading-snug tracking-tight text-slate-900">
           <Link
             href={href}
-            className="hover:text-blue-800 hover:underline focus-visible:outline-blue-700"
+            className="hover:text-amber-800 hover:underline focus-visible:outline-amber-800"
           >
             <T text={apartment.title} />
           </Link>
@@ -85,17 +89,17 @@ export function ApartmentCard({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${apartment.address} · ${translate("2ГИС (откроется в новой вкладке)", language)}`}
-              className="inline-flex min-h-11 items-center gap-1 text-blue-800 hover:underline"
+              className="inline-flex min-h-11 items-center gap-1 text-amber-800 hover:underline"
             >
               <MapPin size={14} aria-hidden="true" />{" "}
               <T text="На карте 2ГИС" />{" "}
             </a>
           )}
         </div>
-        <div className="border-t border-slate-100 pt-2">
+        <div className="mt-auto pt-4">
           <Link
             href={href}
-            className="flex min-h-11 items-center justify-between rounded-lg bg-amber-100 px-3 text-sm font-medium text-amber-950 transition-colors hover:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+            className="flex min-h-11 items-center justify-between rounded-xl border border-amber-200/70 bg-[#fbefcf] px-4 text-sm font-semibold text-amber-950 transition-colors hover:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
           >
             {" "}
             <T text="Подробнее" /> <ArrowUpRight size={17} aria-hidden="true" />
