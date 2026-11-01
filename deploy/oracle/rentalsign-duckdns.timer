@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodically update Qutty Qonaq DuckDNS address
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Unit=rentalsign-duckdns.service
+
+[Install]
+WantedBy=timers.target

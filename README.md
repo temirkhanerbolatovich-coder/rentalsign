@@ -2,7 +2,7 @@
 
 MVP каталога квартир и оформления договоров аренды в Усть-Каменогорске. Публичный бренд — **Qutty Qonaq Apartments**, техническое имя репозитория и адрес хостинга остаются `rentalsign`.
 
-**Сайт:** [Qutty Qonaq](https://rentalsign.161-33-183-103.sslip.io/apartments) · **Кабинет владельца:** [вход](https://rentalsign.161-33-183-103.sslip.io/login)
+**Сайт:** [Qutty Qonaq](https://quttyqonaq.duckdns.org/apartments) · **Кабинет владельца:** [вход](https://quttyqonaq.duckdns.org/login)
 
 ## Текущее состояние — 31 октября 2026
 
