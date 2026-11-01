@@ -55,7 +55,7 @@ export async function contractReservations(filter: Filter, now = new Date()) {
     select: {
       id: true,
       status: true,
-      property: { select: { name: true, catalogSlug: true } },
+      property: { select: { id: true, name: true, catalogSlug: true } },
       versions: {
         orderBy: { version: "desc" },
         take: 1,
@@ -91,6 +91,7 @@ export async function contractReservations(filter: Filter, now = new Date()) {
       return [
         {
           id: contract.id,
+          propertyId: contract.property.id,
           propertyName: contract.property.name,
           catalogSlug: contract.property.catalogSlug,
           ...contractCalendarDates(snapshot.checkIn, snapshot.checkOut),
