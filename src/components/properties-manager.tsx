@@ -36,12 +36,16 @@ import { findApartment } from "@/catalog/apartments";
 import { PhotoManager } from "./photo-manager";
 import type { Gallery } from "@/services/property-photos";
 import { ApartmentPrice } from "./apartment-price";
+import { CatalogListingEditor } from "./catalog-listing-editor";
+import type { Apartment } from "@/catalog/apartments";
 type PropertyRow = PropertyInput & {
   id: string;
   archived: boolean;
   catalogSlug?: string | null;
   gallery: Gallery;
   publishesPhotos: boolean;
+  catalogApartment: Apartment | null;
+  listingRevision: number;
 };
 export function PropertiesManager({
   properties,
@@ -223,9 +227,11 @@ export function PropertiesManager({
       )}
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
         {visible.map((property) => {
-          const apartment = property.catalogSlug
-            ? findApartment(property.catalogSlug)
-            : undefined;
+          const apartment =
+            property.catalogApartment ??
+            (property.catalogSlug
+              ? findApartment(property.catalogSlug)
+              : undefined);
           const cover = property.gallery.photos[0];
           return (
             <article
@@ -392,6 +398,15 @@ export function PropertiesManager({
                 )}
               </div>
               <div className="space-y-3 border-t border-slate-100 p-4">
+                {property.publishesPhotos &&
+                  !property.archived &&
+                  apartment && (
+                    <CatalogListingEditor
+                      propertyId={property.id}
+                      apartment={apartment}
+                      revision={property.listingRevision}
+                    />
+                  )}
                 {!property.archived && (
                   <Button className="w-full" asChild>
                     <Link href={`/contracts/new?propertyId=${property.id}`}>
@@ -607,10 +622,15 @@ export function PropertiesManager({
               </label>
             </div>
             {editing?.catalogSlug && (
-              <p className="text-xs leading-5 text-slate-500">
-                {" "}
-                <T text="Для нового договора сумма рассчитывается по суточной цене каталога и может быть изменена в форме договора. Сохранённая здесь сумма не меняет цену на сайте." />{" "}
-              </p>
+              <div className="space-y-2 text-xs leading-5 text-slate-500">
+                <p>
+                  {" "}
+                  <T text="Для нового договора сумма рассчитывается по суточной цене каталога и может быть изменена в форме договора. Сохранённая здесь сумма не меняет цену на сайте." />{" "}
+                </p>
+                <p>
+                  <T text="Изменения адреса и описания здесь не обновляют карточку сайта. Для публичных данных используйте редактирование карточки." />
+                </p>
+              </div>
             )}
             {error && (
               <p role="alert" className="error">

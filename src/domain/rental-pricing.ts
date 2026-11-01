@@ -1,4 +1,4 @@
-import { findApartment } from "@/catalog/apartments";
+import { findApartment, type Apartment } from "@/catalog/apartments";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_RENT = 100_000_000;
@@ -8,8 +8,10 @@ export function catalogRent(
   catalogSlug: string | null | undefined,
   checkIn: string,
   checkOut: string,
+  currentApartment?: Apartment | null,
 ) {
-  const apartment = catalogSlug ? findApartment(catalogSlug) : undefined;
+  const apartment =
+    currentApartment ?? (catalogSlug ? findApartment(catalogSlug) : undefined);
   if (
     !apartment ||
     apartment.pricingPeriod !== "day" ||

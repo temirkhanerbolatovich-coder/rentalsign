@@ -10,6 +10,7 @@ const localDate = new Intl.DateTimeFormat("en-CA", {
   month: "2-digit",
   day: "2-digit",
 });
+const CLEANING_TIME_MS = 2 * 60 * 60 * 1000;
 function dateInKazakhstan(value: Date) {
   const parts = localDate.formatToParts(value);
   return ["year", "month", "day"]
@@ -41,6 +42,7 @@ export async function contractReservations(filter: Filter, now = new Date()) {
   const contracts = await db.contract.findMany({
     where: {
       status: { in: ["PENDING", "DEMO_SIGNED"] },
+      bookingCancellation: { is: null },
       ...(filter.ownerId
         ? { ownerId: filter.ownerId }
         : {
@@ -113,11 +115,12 @@ export async function assertDatesAvailable(
   if (!property)
     throw new AppError(400, "Выберите действующий объект недвижимости");
   const dates = contractCalendarDates(input.checkIn, input.checkOut);
-  const overlap = (other: { startDate: string; endDate: string }) =>
-    other.startDate <= dates.endDate && other.endDate >= dates.startDate;
+  const checkIn = new Date(input.checkIn).getTime();
+  const checkOut = new Date(input.checkOut).getTime();
   if (property.catalogSlug) {
     const manual = await tx.availability.findFirst({
       where: {
+        ownerId,
         catalogSlug: property.catalogSlug,
         status: { in: ["occupied", "reserved"] },
         startDate: { lte: dates.endDate },
@@ -136,6 +139,7 @@ export async function assertDatesAvailable(
       ownerId,
       propertyId: property.id,
       status: { in: ["PENDING", "DEMO_SIGNED"] },
+      bookingCancellation: { is: null },
       ...(excludeContractId ? { id: { not: excludeContractId } } : {}),
     },
     select: {
@@ -180,7 +184,14 @@ export async function assertDatesAvailable(
         503,
         "Не удалось проверить занятость. Попробуйте позже.",
       );
-    if (overlap(contractCalendarDates(snapshot.checkIn, snapshot.checkOut)))
+    // Validate historical timestamps before comparing their actual times.
+    contractCalendarDates(snapshot.checkIn, snapshot.checkOut);
+    const otherCheckIn = new Date(snapshot.checkIn).getTime();
+    const otherCheckOut = new Date(snapshot.checkOut).getTime();
+    if (
+      checkIn < otherCheckOut + CLEANING_TIME_MS &&
+      otherCheckIn < checkOut + CLEANING_TIME_MS
+    )
       throw new AppError(
         409,
         "Выбранные даты заняты или забронированы. Выберите другие даты.",

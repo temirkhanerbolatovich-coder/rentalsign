@@ -107,6 +107,15 @@ export default async function Detail({
                 : undefined
             }
             defaultTtl={linkTtlHours()}
+            bookingCancellation={
+              contract.bookingCancellation
+                ? {
+                    reason: contract.bookingCancellation.reason,
+                    createdAt:
+                      contract.bookingCancellation.createdAt.toISOString(),
+                  }
+                : null
+            }
           />
           <section className="card p-5">
             <h2 className="mb-5 flex items-center gap-2 text-sm font-semibold">
@@ -120,7 +129,9 @@ export default async function Detail({
                   className="relative border-l-2 border-teal-100 pl-4"
                 >
                   <p className="text-xs font-medium">
-                    {eventLabels[event.action] || event.action}
+                    <Localized>
+                      {eventLabels[event.action] || event.action}
+                    </Localized>
                   </p>
                   <p className="mt-1 text-[10px] text-slate-400">
                     <LocaleDate value={event.createdAt} />

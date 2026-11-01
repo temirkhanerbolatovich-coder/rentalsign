@@ -200,7 +200,7 @@ test("corrected apartment details expose the confirmed addresses, photo sets and
     ).toBeVisible();
     await expect(
       page.getByRole("link", {
-        name: "Открыть в 2ГИС (новая вкладка)",
+        name: "Посмотреть на карте 2ГИС (откроется в новой вкладке)",
         exact: true,
       }),
     ).toHaveAttribute("href", apartment.map);

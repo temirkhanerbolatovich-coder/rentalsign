@@ -5,6 +5,7 @@ import { PropertiesManager } from "@/components/properties-manager";
 import {
   catalogOwnerEmail,
   getPropertyGallery,
+  getCatalogApartments,
 } from "@/services/property-photos";
 import type { PropertyInput } from "@/validation/schemas";
 export default async function Properties() {
@@ -12,6 +13,11 @@ export default async function Properties() {
   const properties = await db.property.findMany({
     where: { ownerId: admin.id },
     orderBy: { createdAt: "desc" },
+  });
+  const catalog = await getCatalogApartments();
+  const listings = await db.catalogListing.findMany({
+    where: { property: { ownerId: admin.id } },
+    select: { propertyId: true, revision: true },
   });
   return (
     <PropertiesManager
@@ -27,6 +33,10 @@ export default async function Properties() {
           deposit: p.deposit,
           archived: p.archived,
           catalogSlug: p.catalogSlug,
+          catalogApartment:
+            catalog.find((entry) => entry.slug === p.catalogSlug) ?? null,
+          listingRevision:
+            listings.find((entry) => entry.propertyId === p.id)?.revision ?? 0,
           gallery: await getPropertyGallery(p),
           publishesPhotos: Boolean(
             p.catalogSlug &&

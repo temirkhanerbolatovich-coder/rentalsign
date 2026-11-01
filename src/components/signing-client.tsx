@@ -23,11 +23,13 @@ export function SigningClient({
   snapshot,
   signedAt,
   expiresAt,
+  bookingCancelled,
 }: {
   token: string;
   snapshot: ContractSnapshot;
   signedAt: string | null;
   expiresAt: string;
+  bookingCancelled: boolean;
 }) {
   const language = useLanguage();
   const router = useRouter();
@@ -66,6 +68,14 @@ export function SigningClient({
           </Localized>
         </p>
         <DemoNotice />
+        {bookingCancelled && (
+          <p
+            role="status"
+            className="my-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            <T text="Бронь отменена. Обратитесь к владельцу для уточнения." />
+          </p>
+        )}
         {signedAt && (
           <div
             role="status"

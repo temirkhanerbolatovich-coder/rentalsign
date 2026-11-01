@@ -1,3 +1,13 @@
+export class ClientApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public code?: string,
+  ) {
+    super(message);
+  }
+}
+
 export async function clientApi<T = { id: string }>(
   url: string,
   method = "GET",
@@ -12,6 +22,10 @@ export async function clientApi<T = { id: string }>(
   });
   const result = await response.json();
   if (!response.ok)
-    throw new Error(result.error || "Не удалось выполнить запрос");
+    throw new ClientApiError(
+      result.error || "Не удалось выполнить запрос",
+      response.status,
+      result.code,
+    );
   return result as T;
 }

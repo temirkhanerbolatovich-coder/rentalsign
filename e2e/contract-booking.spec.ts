@@ -121,6 +121,28 @@ test("catalog pricing can be adjusted and issued contracts appear as private-saf
   await expect(
     page.getByRole("region", { name: "Брони по договорам" }),
   ).toContainText("2090-02-01 — 2090-02-04");
+  await page
+    .getByRole("combobox", { name: "Квартира", exact: true })
+    .selectOption(apartment.slug);
+  await page.getByLabel("Первый занятый день").fill("2090-02-02");
+  await page
+    .getByLabel("Последний занятый день (включительно)")
+    .fill("2090-02-03");
+  await page.getByRole("button", { name: "Добавить период" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "пересекается с бронью" }),
+  ).toBeVisible();
+  expect(
+    await (await page.request.get("/api/availability")).json(),
+  ).toHaveLength(0);
+  await page.getByRole("button", { name: "Сохранить отметку" }).click();
+  await expect(
+    page.getByText("2090-02-02 — 2090-02-03 · Занято"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Снять отметку" }).click();
+  await expect(page.getByText("2090-02-02 — 2090-02-03 · Занято")).toHaveCount(
+    0,
+  );
   expect(
     (
       await page.request.delete(`/api/contracts/${contract.id}/link`, {
@@ -152,5 +174,52 @@ test("catalog pricing can be adjusted and issued contracts appear as private-saf
     ).ok(),
   ).toBe(true);
   expect(await (await request.get(publicUrl)).json()).toContainEqual(booking);
+  expect(
+    (
+      await request.post(`/api/contracts/${second.id}/booking-cancellation`, {
+        headers: { Origin: origin },
+        data: { reason: "Тест" },
+      })
+    ).status(),
+  ).toBe(401);
+  expect(
+    (
+      await page.request.post(
+        `/api/contracts/${second.id}/booking-cancellation`,
+        {
+          headers: { Origin: origin },
+          data: { reason: " " },
+        },
+      )
+    ).status(),
+  ).toBe(400);
+  await page.goto(`/contracts/${second.id}`);
+  await page.getByLabel("Причина отмены брони").fill("Изменились планы гостя");
+  await page.getByRole("button", { name: "Отменить бронь" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Отменить бронь" })
+    .click();
+  await expect(page.getByText("Бронь отменена", { exact: true })).toBeVisible();
+  await expect(page.getByText("Изменились планы гостя")).toBeVisible();
+  expect(
+    (
+      await page.request.post(
+        `/api/contracts/${second.id}/booking-cancellation`,
+        {
+          headers: { Origin: origin },
+          data: { reason: "Повтор" },
+        },
+      )
+    ).status(),
+  ).toBe(409);
+  expect(await (await request.get(publicUrl)).json()).not.toContainEqual(
+    booking,
+  );
+  await page.goto(`/sign/${token}`);
+  await expect(
+    page.getByText("Бронь отменена. Обратитесь к владельцу для уточнения."),
+  ).toBeVisible();
+  await expect(page.getByText("Изменились планы гостя")).toHaveCount(0);
   expect(url).toContain("/sign/");
 });

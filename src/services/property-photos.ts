@@ -81,6 +81,7 @@ export async function getCatalogApartments(): Promise<Apartment[]> {
     where: { owner: { email }, catalogSlug: { not: null } },
     select: {
       catalogSlug: true,
+      listing: true,
       gallery: {
         select: {
           photos: { orderBy: { position: "asc" }, select: photoSelect },
@@ -89,15 +90,29 @@ export async function getCatalogApartments(): Promise<Apartment[]> {
     },
   });
   const overrides = new Map(
-    properties
-      .filter((p) => p.gallery)
-      .map((p) => [p.catalogSlug, p.gallery!.photos.map(toPhoto)]),
+    properties.map((property) => [property.catalogSlug, property]),
   );
-  return apartments.map((apartment) =>
-    overrides.has(apartment.slug)
-      ? { ...apartment, photos: overrides.get(apartment.slug)! }
-      : apartment,
-  );
+  return apartments.map((apartment) => {
+    const property = overrides.get(apartment.slug);
+    const listing = property?.listing;
+    return {
+      ...apartment,
+      ...(listing
+        ? {
+            title: listing.title,
+            address: listing.address,
+            description: listing.description,
+            arrivalInstructions: listing.arrivalInstructions,
+            mapUrl: listing.mapUrl,
+            priceMin: listing.priceMin,
+            priceMax: listing.priceMax,
+          }
+        : {}),
+      photos: property?.gallery
+        ? property.gallery.photos.map(toPhoto)
+        : apartment.photos,
+    };
+  });
 }
 
 export async function readImage(request: Request) {

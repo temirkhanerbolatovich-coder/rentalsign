@@ -400,6 +400,145 @@ test("manual occupied and reserved ranges block inclusive checkout dates", async
   );
 });
 
+test("same-day stays allow two hours of cleaning and reject shorter gaps", async () => {
+  const input = {
+    propertyId,
+    landlordName: "Тест",
+    landlordId: "",
+    landlordPhone: "+7 000 000 00 00",
+    tenantName: "Гость",
+    tenantId: "",
+    tenantPhone: "+7 000 000 00 00",
+    checkIn: "2094-06-01T14:00:00+05:00",
+    checkOut: "2094-06-02T11:00:00+05:00",
+    rent: 10000,
+    deposit: 0,
+    additionalTerms: "",
+    ...defaultTerms,
+  };
+  const first = await contracts.createContract(ownerId, input);
+  await contracts.issueLink(ownerId, first.id, 24, first.revision);
+  const before = await db.contractVersion.findFirstOrThrow({
+    where: { contractId: first.id },
+  });
+  const next = {
+    ...input,
+    checkIn: "2094-06-02T13:00:00+05:00",
+    checkOut: "2094-06-03T11:00:00+05:00",
+  };
+  assert.equal((await contracts.createContract(ownerId, next)).status, "DRAFT");
+  await assert.rejects(
+    contracts.createContract(ownerId, {
+      ...next,
+      checkIn: "2094-06-02T12:59:00+05:00",
+    }),
+    { status: 409 },
+  );
+  await assert.rejects(
+    contracts.createContract(ownerId, {
+      ...input,
+      checkIn: "2094-05-31T14:00:00+05:00",
+      checkOut: "2094-06-01T12:01:00+05:00",
+    }),
+    { status: 409 },
+  );
+  const after = await db.contractVersion.findUniqueOrThrow({
+    where: { id: before.id },
+  });
+  assert.equal(after.snapshot, before.snapshot);
+  assert.equal(after.contentHash, before.contentHash);
+});
+
+test("cancelling a signed booking releases dates without changing its snapshot", async () => {
+  const input = {
+    propertyId,
+    landlordName: "Тест",
+    landlordId: "",
+    landlordPhone: "+7 000 000 00 00",
+    tenantName: "Гость",
+    tenantId: "",
+    tenantPhone: "+7 000 000 00 00",
+    checkIn: "2095-08-01T14:00:00+05:00",
+    checkOut: "2095-08-02T11:00:00+05:00",
+    rent: 10000,
+    deposit: 0,
+    additionalTerms: "",
+    ...defaultTerms,
+  };
+  const draft = await contracts.createContract(ownerId, input);
+  const { url } = await contracts.issueLink(
+    ownerId,
+    draft.id,
+    24,
+    draft.revision,
+  );
+  const token = url.split("/").at(-1)!;
+  await signer.sign(token, true);
+  const before = await db.contractVersion.findFirstOrThrow({
+    where: { contractId: draft.id },
+  });
+  await assert.rejects(contracts.cancelBooking(otherId, draft.id, "Тест"), {
+    status: 404,
+  });
+  await contracts.cancelBooking(ownerId, draft.id, "Планы гостя изменились");
+  await assert.rejects(contracts.cancelBooking(ownerId, draft.id, "Повтор"), {
+    status: 409,
+  });
+  assert.equal(
+    (await db.contract.findUniqueOrThrow({ where: { id: draft.id } })).status,
+    "DEMO_SIGNED",
+  );
+  const after = await db.contractVersion.findUniqueOrThrow({
+    where: { id: before.id },
+  });
+  assert.equal(after.snapshot, before.snapshot);
+  assert.equal(after.contentHash, before.contentHash);
+  assert.equal((await contracts.publicContract(token)).bookingCancelled, true);
+  assert.ok(
+    !(await calendar.contractReservations({ ownerId })).some(
+      (item) => item.id === draft.id,
+    ),
+  );
+  assert.equal(
+    (await contracts.createContract(ownerId, input)).status,
+    "DRAFT",
+  );
+  assert.equal(
+    await db.auditEvent.count({
+      where: { contractId: draft.id, action: "BOOKING_CANCELLED" },
+    }),
+    1,
+  );
+});
+
+test("another owner's manual period does not block this owner's contract", async () => {
+  await db.availability.create({
+    data: {
+      ownerId: otherId,
+      catalogSlug: apartment.slug,
+      startDate: "2093-05-01",
+      endDate: "2093-05-02",
+      status: "occupied",
+    },
+  });
+  const draft = await contracts.createContract(ownerId, {
+    propertyId,
+    landlordName: "Тест",
+    landlordId: "",
+    landlordPhone: "+7 000 000 00 00",
+    tenantName: "Гость",
+    tenantId: "",
+    tenantPhone: "+7 000 000 00 00",
+    checkIn: "2093-05-01T14:00:00+05:00",
+    checkOut: "2093-05-02T11:00:00+05:00",
+    rent: 10000,
+    deposit: 0,
+    additionalTerms: "",
+    ...defaultTerms,
+  });
+  assert.equal(draft.status, "DRAFT");
+});
+
 test(
   "concurrent link creation cannot reserve the same dates twice",
   { skip: !testPostgres },

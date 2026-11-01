@@ -19,13 +19,13 @@ export default function ApartmentsLayout({
       </a>
       <header className="catalog-header border-b border-slate-200 bg-white text-slate-900">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-3 px-4 py-4 sm:px-8">
-          <Link
-            href="/"
-            className="order-1 flex items-center gap-2.5"
-            aria-label="Qutty Qonaq — главная"
-          >
+          <Link href="/" className="order-1 flex items-center gap-2.5">
             <span className="text-xl">
               <Brand />
+            </span>
+            <span className="sr-only">
+              {" "}
+              — <T text="Главная страница" />
             </span>
           </Link>
           <div className="order-3 w-full sm:order-2 sm:ml-auto sm:w-auto">

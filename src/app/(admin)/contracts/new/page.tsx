@@ -1,10 +1,12 @@
-import { getPropertyGallery } from "@/services/property-photos";
+import {
+  getPropertyGallery,
+  getCatalogApartments,
+} from "@/services/property-photos";
 import { requirePageAdmin } from "@/auth/session";
 import { db } from "@/lib/db";
 import { ContractForm } from "@/components/contract-form";
 import type { PropertyInput } from "@/validation/schemas";
 import { notFound } from "next/navigation";
-import { findApartment } from "@/catalog/apartments";
 import { CatalogImport } from "@/components/catalog-import";
 import { getContractTemplate } from "@/services/contract-template";
 export default async function NewContract({
@@ -14,9 +16,10 @@ export default async function NewContract({
 }) {
   const admin = await requirePageAdmin();
   const query = await searchParams;
+  const catalog = await getCatalogApartments();
   const apartment =
     typeof query.apartment === "string"
-      ? findApartment(query.apartment)
+      ? catalog.find((entry) => entry.slug === query.apartment)
       : undefined;
   if (query.apartment && !apartment) notFound();
   if (apartment) {
@@ -55,6 +58,8 @@ export default async function NewContract({
           rent: p.rent,
           deposit: p.deposit,
           catalogSlug: p.catalogSlug,
+          catalogApartment:
+            catalog.find((entry) => entry.slug === p.catalogSlug) ?? null,
           photo: (await getPropertyGallery(p)).photos[0] ?? null,
         })),
       )}

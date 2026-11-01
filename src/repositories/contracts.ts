@@ -5,6 +5,7 @@ import type { ContractInput, ContractSnapshot } from "@/validation/schemas";
 const include = {
   versions: { orderBy: { version: "desc" as const }, include: { link: true } },
   events: { orderBy: { createdAt: "desc" as const } },
+  bookingCancellation: true,
 };
 export async function ownedContract(ownerId: string, id: string) {
   const contract = await db.contract.findFirst({
@@ -38,7 +39,10 @@ export async function makeSnapshot(
   if (!property)
     throw new AppError(400, "Выберите действующий объект недвижимости");
   if (property.catalogSlug && input.rent <= 0)
-    throw new AppError(400, "Укажите согласованную стоимость аренды за весь срок");
+    throw new AppError(
+      400,
+      "Укажите согласованную стоимость аренды за весь срок",
+    );
   return {
     ...input,
     number,

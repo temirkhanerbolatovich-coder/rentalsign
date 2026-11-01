@@ -1,4 +1,7 @@
-import { getPropertyGallery } from "@/services/property-photos";
+import {
+  getPropertyGallery,
+  getCatalogApartments,
+} from "@/services/property-photos";
 import { T } from "@/components/language";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -42,6 +45,7 @@ export default async function Edit({
   const properties = await db.property.findMany({
     where: { ownerId: admin.id, archived: false },
   });
+  const catalog = await getCatalogApartments();
   return (
     <ContractForm
       existing={{
@@ -60,6 +64,8 @@ export default async function Edit({
           rent: p.rent,
           deposit: p.deposit,
           catalogSlug: p.catalogSlug,
+          catalogApartment:
+            catalog.find((entry) => entry.slug === p.catalogSlug) ?? null,
           photo: (await getPropertyGallery(p)).photos[0] ?? null,
         })),
       )}

@@ -1,11 +1,11 @@
 "use client";
 
-import { T, Localized } from "@/components/language";
+import { T, Localized, translate, useLanguage } from "@/components/language";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { clientApi } from "./client-api";
+import { clientApi, ClientApiError } from "./client-api";
 import { Button } from "./ui/button";
 type Period = {
   id: string;
@@ -30,8 +30,38 @@ export function AvailabilityManager({
   }[];
 }) {
   const router = useRouter();
+  const language = useLanguage();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pendingPeriod, setPendingPeriod] = useState<Record<
+    string,
+    FormDataEntryValue
+  > | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  async function addPeriod(
+    values: Record<string, FormDataEntryValue>,
+    confirmOverlap = false,
+  ) {
+    setBusy(true);
+    setError("");
+    try {
+      await clientApi("/api/availability", "POST", {
+        ...values,
+        ...(confirmOverlap ? { confirmOverlap: true } : {}),
+      });
+      formRef.current?.reset();
+      setPendingPeriod(null);
+      router.refresh();
+    } catch (e) {
+      if (e instanceof ClientApiError && e.code === "BOOKING_OVERLAP") {
+        setPendingPeriod(values);
+      } else {
+        setError((e as Error).message);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
   async function remove(id: string) {
     setBusy(true);
     setError("");
@@ -52,7 +82,7 @@ export function AvailabilityManager({
       </h1>
       <p className="mt-3 text-sm text-slate-600">
         {" "}
-        <T text="Гости видят только даты и статус. Ручные периоды включают оба дня; бронь по договору также включает день выезда. Создание договора на отмеченные даты недоступно." />{" "}
+        <T text="Гости видят только даты и статус. Ручные отметки занимают дни целиком. Для договоров учитываются время и два часа на уборку." />{" "}
       </p>
       {!apartments.length ? (
         <p className="mt-5">
@@ -61,73 +91,95 @@ export function AvailabilityManager({
         </p>
       ) : (
         <form
+          ref={formRef}
           className="card my-6 grid gap-4 p-5 sm:grid-cols-2"
           onSubmit={async (event) => {
             event.preventDefault();
-            const form = event.currentTarget;
-            const values = new FormData(form);
-            setBusy(true);
-            setError("");
-            try {
-              await clientApi(
-                "/api/availability",
-                "POST",
-                Object.fromEntries(values),
-              );
-              form.reset();
-              router.refresh();
-            } catch (e) {
-              setError((e as Error).message);
-            } finally {
-              setBusy(false);
-            }
+            await addPeriod(
+              Object.fromEntries(new FormData(event.currentTarget)),
+            );
           }}
         >
-          <label className="label">
-            {" "}
-            <T text="Квартира" />{" "}
-            <select name="catalogSlug" className="field mt-2" required>
-              {apartments.map((a) => (
-                <option key={a.slug} value={a.slug}>
-                  <Localized>{a.title}</Localized>
+          <fieldset
+            disabled={busy || Boolean(pendingPeriod)}
+            className="contents"
+          >
+            <label className="label">
+              {" "}
+              <T text="Квартира" />{" "}
+              <select name="catalogSlug" className="field mt-2" required>
+                {apartments.map((a) => (
+                  <option key={a.slug} value={a.slug}>
+                    <Localized>{a.title}</Localized>
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="label">
+              {" "}
+              <T text="Статус" />{" "}
+              <select name="status" className="field mt-2">
+                <option value="occupied">
+                  {" "}
+                  <T text="Занято" />{" "}
                 </option>
-              ))}
-            </select>
-          </label>
-          <label className="label">
-            {" "}
-            <T text="Статус" />{" "}
-            <select name="status" className="field mt-2">
-              <option value="occupied">
-                {" "}
-                <T text="Занято" />{" "}
-              </option>
-              <option value="reserved">
-                {" "}
-                <T text="Забронировано" />{" "}
-              </option>
-            </select>
-          </label>
-          <label className="label">
-            {" "}
-            <T text="Первый занятый день" />{" "}
-            <input
-              type="date"
-              name="startDate"
-              className="field mt-2"
-              required
-            />
-          </label>
-          <label className="label">
-            {" "}
-            <T text="Последний занятый день (включительно)" />{" "}
-            <input type="date" name="endDate" className="field mt-2" required />
-          </label>
-          <Button disabled={busy} type="submit">
-            {" "}
-            <T text="Добавить период" />{" "}
-          </Button>
+                <option value="reserved">
+                  {" "}
+                  <T text="Забронировано" />{" "}
+                </option>
+              </select>
+            </label>
+            <label className="label">
+              {" "}
+              <T text="Первый занятый день" />{" "}
+              <input
+                type="date"
+                name="startDate"
+                className="field mt-2"
+                required
+              />
+            </label>
+            <label className="label">
+              {" "}
+              <T text="Последний занятый день (включительно)" />{" "}
+              <input
+                type="date"
+                name="endDate"
+                className="field mt-2"
+                required
+              />
+            </label>
+            <Button disabled={busy} type="submit">
+              {" "}
+              <T text="Добавить период" />{" "}
+            </Button>
+          </fieldset>
         </form>
+      )}
+      {pendingPeriod && (
+        <div role="alert" className="card my-4 p-5 text-sm">
+          <p>
+            <T text="Этот период пересекается с бронью по договору. Сохранить отметку?" />
+          </p>
+          <p className="mt-2 font-semibold">
+            {String(pendingPeriod.startDate)} — {String(pendingPeriod.endDate)}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button
+              disabled={busy}
+              onClick={() => addPeriod(pendingPeriod, true)}
+            >
+              <T text="Сохранить отметку" />
+            </Button>
+            <Button
+              disabled={busy}
+              variant="outline"
+              onClick={() => setPendingPeriod(null)}
+            >
+              <T text="Отмена" />
+            </Button>
+          </div>
+        </div>
       )}
       {error && (
         <p role="alert" className="error my-4">
@@ -166,12 +218,15 @@ export function AvailabilityManager({
         ))}
       </ul>
       {bookings.length > 0 && (
-        <section className="mt-8" aria-label="Брони по договорам">
+        <section
+          className="mt-8"
+          aria-label={translate("Брони по договорам", language)}
+        >
           <h2 className="text-lg font-semibold">
             <T text="Брони по договорам" />
           </h2>
           <p className="mt-2 text-sm text-slate-600">
-            <T text="Появляются после создания ссылки. День выезда тоже отмечается. При отзыве или истечении неподписанной ссылки бронь исчезает; подписанные договоры остаются в расписании." />
+            <T text="Бронь появляется после создания ссылки и исчезает при её отзыве или истечении до демоподписания. После демоподписания владелец может отменить бронь в договоре." />
           </p>
           <ul className="mt-4 space-y-3">
             {bookings.map((booking) => (

@@ -48,9 +48,23 @@ model Property {
   createdAt   DateTime   @default(now())
   contracts   Contract[]
   gallery     PropertyGallery?
+  listing     CatalogListing?
 
   @@index([ownerId, archived])
   @@unique([ownerId, catalogSlug])
+}
+
+model CatalogListing {
+  propertyId String @id
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  revision Int @default(1)
+  title String
+  address String
+  description String?
+  arrivalInstructions String?
+  mapUrl String?
+  priceMin Int?
+  priceMax Int?
 }
 
 model Contract {
@@ -67,8 +81,16 @@ model Contract {
   signedAt   DateTime?
   versions   ContractVersion[]
   events     AuditEvent[]
+  bookingCancellation BookingCancellation?
 
   @@index([ownerId, createdAt])
+}
+
+model BookingCancellation {
+  contractId String   @id
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  reason     String
+  createdAt  DateTime @default(now())
 }
 
 model ContractVersion {

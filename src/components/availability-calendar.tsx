@@ -124,6 +124,9 @@ export function AvailabilityCalendar({ slug }: { slug: string }) {
       <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
         <T text="Неотмеченные даты не гарантируют доступность. Уточняйте у владельца." />
       </p>
+      <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
+        <T text="День выезда отмечен в календаре; новый заезд возможен после уборки. Уточняйте время у владельца." />
+      </p>
       {error ? (
         <p role="alert" className="error mt-4">
           <T text="Не удалось загрузить календарь" />

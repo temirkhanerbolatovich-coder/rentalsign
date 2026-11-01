@@ -14,10 +14,11 @@ import {
   Wifi,
   ChevronDown,
 } from "lucide-react";
-import { apartments, findApartment } from "@/catalog/apartments";
+import { apartments } from "@/catalog/apartments";
 import { getCatalogApartments } from "@/services/property-photos";
 import { ApartmentGallery } from "@/components/apartment-gallery";
 import { ApartmentPrice } from "@/components/apartment-price";
+import { HouseRules } from "@/components/house-rules";
 import { DemoNotice } from "@/components/demo-notice";
 import { Button } from "@/components/ui/button";
 
@@ -33,7 +34,9 @@ export async function generateMetadata({
   params,
 }: ApartmentPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const apartment = findApartment(slug);
+  const apartment = (await getCatalogApartments()).find(
+    (entry) => entry.slug === slug,
+  );
   if (!apartment) return { title: "Квартира не найдена" };
 
   return {
@@ -129,6 +132,16 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
       <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
         <div className="min-w-0 space-y-6">
           <AvailabilityCalendar slug={apartment.slug} />
+          {apartment.description && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="mb-3 text-lg font-semibold">
+                <T text="Описание квартиры" />
+              </h2>
+              <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-600">
+                {apartment.description}
+              </p>
+            </section>
+          )}
           {(apartment.arrivalInstructions || apartment.wifi) && (
             <section
               className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
@@ -158,7 +171,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
                         aria-hidden="true"
                       />
                     </summary>
-                    <p className="border-t border-stone-200/60 px-4 py-4 text-sm leading-7 text-slate-600">
+                    <p className="whitespace-pre-wrap break-words border-t border-stone-200/60 px-4 py-4 text-sm leading-7 text-slate-600">
                       <T text={apartment.arrivalInstructions} />
                     </p>
                   </details>
@@ -203,6 +216,7 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
               </div>
             </section>
           )}
+          <HouseRules />
         </div>
         <aside
           className="space-y-5 lg:sticky lg:top-6"
@@ -228,10 +242,13 @@ export default async function ApartmentPage({ params }: ApartmentPageProps) {
                   href={apartment.mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Открыть в 2ГИС (новая вкладка)"
                 >
                   <MapPin aria-hidden="true" />
                   <T text="Посмотреть на карте 2ГИС" />
+                  <span className="sr-only">
+                    {" "}
+                    <T text="(откроется в новой вкладке)" />
+                  </span>
                   <ArrowUpRight className="shrink-0" aria-hidden="true" />
                 </a>
               </Button>

@@ -97,21 +97,16 @@ test("availability enforces authentication, dates, ownership and public privacy"
     `/api/availability?apartment=${slug}`,
   );
   const rows = await publicResponse.json();
-  expect(rows).toContainEqual({
+  expect(rows).not.toContainEqual({
     startDate: payload.startDate,
     endDate: payload.endDate,
-    status: "occupied",
+    status: payload.status,
   });
-  expect(Object.keys(rows[0]).sort()).toEqual([
-    "endDate",
-    "startDate",
-    "status",
-  ]);
   const other = await browser.newContext();
   const login = await other.request.post(`${origin}/api/auth/login`, {
     headers: { Origin: origin },
     data: {
-      email: "availability-other@e2e.test",
+      email: "photos-owner@e2e.test",
       password: process.env.E2E_PASSWORD!,
     },
   });
@@ -124,6 +119,49 @@ test("availability enforces authentication, dates, ownership and public privacy"
       })
     ).status(),
   ).toBe(404);
+  expect(
+    (
+      await other.request.post(`${origin}/api/catalog/${slug}/property`, {
+        headers: { Origin: origin },
+      })
+    ).ok(),
+  ).toBe(true);
+  const publicPeriod = {
+    ...payload,
+    startDate: "2026-11-09",
+    endDate: "2026-11-10",
+  };
+  const publicCreate = await other.request.post(`${origin}/api/availability`, {
+    headers: { Origin: origin },
+    data: publicPeriod,
+  });
+  expect(publicCreate.ok()).toBe(true);
+  const publicRows = await (
+    await request.get(`/api/availability?apartment=${slug}`)
+  ).json();
+  expect(publicRows).toContainEqual({
+    startDate: publicPeriod.startDate,
+    endDate: publicPeriod.endDate,
+    status: publicPeriod.status,
+  });
+  expect(Object.keys(publicRows[0]).sort()).toEqual([
+    "endDate",
+    "startDate",
+    "status",
+  ]);
+  expect(publicRows).not.toContainEqual({
+    startDate: payload.startDate,
+    endDate: payload.endDate,
+    status: payload.status,
+  });
+  expect(
+    (
+      await other.request.delete(`${origin}/api/availability`, {
+        headers: { Origin: origin },
+        data: { id: (await publicCreate.json()).id },
+      })
+    ).ok(),
+  ).toBe(true);
   await other.close();
   await page.goto("/availability");
   await expect(

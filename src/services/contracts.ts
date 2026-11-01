@@ -147,11 +147,44 @@ export async function revokeLink(ownerId: string, id: string) {
     return { id };
   });
 }
+export async function cancelBooking(
+  ownerId: string,
+  id: string,
+  reason: string,
+) {
+  return transaction(async (tx) => {
+    const contract = await tx.contract.findFirst({
+      where: { id, ownerId },
+      select: { status: true, revision: true, bookingCancellation: true },
+    });
+    if (!contract) throw new AppError(404, "Договор не найден");
+    if (contract.status !== "DEMO_SIGNED" || contract.bookingCancellation)
+      throw new AppError(409, "Отмена брони недоступна");
+    const updated = await tx.contract.updateMany({
+      where: {
+        id,
+        ownerId,
+        status: "DEMO_SIGNED",
+        revision: contract.revision,
+      },
+      data: { revision: { increment: 1 } },
+    });
+    if (!updated.count)
+      throw new AppError(409, "Договор изменён. Обновите страницу");
+    await tx.bookingCancellation.create({ data: { contractId: id, reason } });
+    await audit(tx, id, "BOOKING_CANCELLED", "ADMIN");
+    return { id };
+  });
+}
 export async function publicContract(token: string) {
   if (!validToken(token)) throw new AppError(404, "Ссылка не найдена");
   const link = await db.signingLink.findUnique({
     where: { tokenHash: hashToken(token) },
-    include: { version: { include: { contract: true } } },
+    include: {
+      version: {
+        include: { contract: { include: { bookingCancellation: true } } },
+      },
+    },
   });
   if (!link) throw new AppError(404, "Ссылка не найдена");
   if (link.revokedAt)
@@ -166,6 +199,7 @@ export async function publicContract(token: string) {
     status: effectiveStatus(link.version.contract, link),
     signedAt: link.version.signedAt,
     expiresAt: link.expiresAt,
+    bookingCancelled: Boolean(link.version.contract.bookingCancellation),
   };
 }
 export async function duplicateContract(ownerId: string, id: string) {

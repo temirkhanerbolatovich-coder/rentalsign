@@ -52,6 +52,7 @@ export default async function Sign({
       snapshot={contract.snapshot}
       signedAt={contract.signedAt?.toISOString() || null}
       expiresAt={contract.expiresAt.toISOString()}
+      bookingCancelled={contract.bookingCancelled}
     />
   );
 }

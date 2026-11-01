@@ -2,11 +2,14 @@ import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { findApartment } from "@/catalog/apartments";
 import { Prisma } from "@prisma/client";
+import { getCatalogApartments } from "@/services/property-photos";
 
 /** Explicit owner action: link a public listing to a private contract object once. */
 export async function ensureCatalogProperty(ownerId: string, slug: string) {
-  const apartment = findApartment(slug);
-  if (!apartment) throw new AppError(404, "Квартира не найдена");
+  if (!findApartment(slug)) throw new AppError(404, "Квартира не найдена");
+  const apartment = (await getCatalogApartments()).find(
+    (entry) => entry.slug === slug,
+  )!;
   const key = { ownerId_catalogSlug: { ownerId, catalogSlug: apartment.slug } };
   const property = await db.property
     .upsert({

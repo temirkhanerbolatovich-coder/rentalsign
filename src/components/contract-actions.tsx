@@ -32,6 +32,7 @@ export function ContractActions({
   phone,
   initialLink,
   defaultTtl,
+  bookingCancellation,
 }: {
   id: string;
   number: string;
@@ -40,6 +41,7 @@ export function ContractActions({
   phone: string;
   initialLink?: { url: string; expiresAt: string };
   defaultTtl: number;
+  bookingCancellation: { reason: string; createdAt: string } | null;
 }) {
   const language = useLanguage();
   const router = useRouter();
@@ -47,6 +49,7 @@ export function ContractActions({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
   const link = status === "PENDING" ? initialLink : undefined;
   async function issue() {
     await clientApi(`/api/contracts/${id}/link`, "POST", {
@@ -59,6 +62,12 @@ export function ContractActions({
   async function revoke() {
     await clientApi(`/api/contracts/${id}/link`, "DELETE");
     setMessage("Ссылка отозвана");
+    router.refresh();
+  }
+  async function cancelBooking() {
+    await clientApi(`/api/contracts/${id}/booking-cancellation`, "POST", {
+      reason: cancellationReason,
+    });
     router.refresh();
   }
   async function duplicate() {
@@ -182,7 +191,7 @@ export function ContractActions({
             />
           </label>
           <p className="mt-3 text-xs leading-5 text-slate-600">
-            <T text="После создания ссылки даты договора, включая выезд, появятся как забронированные. Если даты уже заняты, ссылку создать нельзя." />
+            <T text="После создания ссылки даты договора появятся в календаре. Между выездом и следующим заездом нужно два часа на уборку." />
           </p>
           <div className="mt-3">
             <ConfirmAction
@@ -208,10 +217,49 @@ export function ContractActions({
         </div>
       )}
       {status === "DEMO_SIGNED" && (
-        <p className="mt-5 rounded-lg bg-teal-50 p-4 text-xs leading-5 text-teal-800">
-          {" "}
-          <T text="Демонстрационное действие выполнено. Содержание этой версии заблокировано." />{" "}
-        </p>
+        <div className="mt-5 rounded-lg bg-teal-50 p-4 text-xs leading-5 text-teal-800">
+          <p>
+            <T text="Демонстрационное действие выполнено. Содержание этой версии заблокировано." />
+          </p>
+          {bookingCancellation ? (
+            <div className="mt-4" role="status">
+              <strong>
+                <T text="Бронь отменена" />
+              </strong>
+              <p>
+                <LocaleDate value={bookingCancellation.createdAt} />
+              </p>
+              <p className="break-words">{bookingCancellation.reason}</p>
+            </div>
+          ) : (
+            <div className="mt-4">
+              <label className="block">
+                <span className="label">
+                  <T text="Причина отмены брони" />
+                </span>
+                <textarea
+                  className="field mt-2"
+                  maxLength={500}
+                  value={cancellationReason}
+                  onChange={(event) =>
+                    setCancellationReason(event.target.value)
+                  }
+                />
+              </label>
+              <div className="mt-3">
+                <ConfirmAction
+                  title="Отменить бронь?"
+                  description="Бронь исчезнет из календаря. Договор и история сохранятся; это действие не является юридическим расторжением."
+                  label="Отменить бронь"
+                  trigger={<T text="Отменить бронь" />}
+                  destructive
+                  disabled={!cancellationReason.trim()}
+                  onConfirm={cancelBooking}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       )}
       {message && (
         <p role="status" className="success mt-4">

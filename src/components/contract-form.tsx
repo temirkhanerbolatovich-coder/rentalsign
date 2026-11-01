@@ -25,7 +25,7 @@ import {
   getDefaultContractTemplate,
   type ContractTemplate,
 } from "@/domain/contract-template";
-import { findApartment } from "@/catalog/apartments";
+import type { Apartment } from "@/catalog/apartments";
 import { catalogRent } from "@/domain/rental-pricing";
 import { ApartmentPrice } from "./apartment-price";
 import {
@@ -37,6 +37,7 @@ import {
 type FormProperty = PropertyInput & {
   id: string;
   catalogSlug?: string | null;
+  catalogApartment: Apartment | null;
   photo: { src: string; alt: string } | null;
 };
 // Prevent an early edit from being lost before the interactive form hydrates.
@@ -50,7 +51,10 @@ function localTime(value: string) {
     .slice(0, 16);
 }
 const initial = (template: ContractTemplate): ContractInput => {
-  const now = Math.floor(Date.now() / 60000) * 60000;
+  const today = new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10);
+  const nextCheckIn = new Date(`${today}T14:00:00+05:00`).getTime() + 86400000;
+  const nextCheckOut =
+    new Date(`${today}T11:00:00+05:00`).getTime() + 2 * 86400000;
   return {
     ...template,
     propertyId: "",
@@ -59,14 +63,13 @@ const initial = (template: ContractTemplate): ContractInput => {
     tenantPhone: "",
     tenantDocument: "",
     tenantAddress: "",
-    checkIn: new Date(now + 86400000).toISOString(),
-    checkOut: new Date(now + 2 * 86400000).toISOString(),
+    checkIn: new Date(nextCheckIn).toISOString(),
+    checkOut: new Date(nextCheckOut).toISOString(),
     rent: 0,
     deposit: 0,
   };
 };
-function hasCatalogDailyRate(slug?: string | null) {
-  const apartment = slug ? findApartment(slug) : undefined;
+function hasCatalogDailyRate(apartment?: Apartment | null) {
   return Boolean(
     apartment &&
     apartment.pricingPeriod === "day" &&
@@ -106,18 +109,19 @@ export function ContractForm({
     return {
       ...initialData,
       propertyId: selectedPropertyId || "",
-      rent: hasCatalogDailyRate(selectedProperty?.catalogSlug)
+      rent: hasCatalogDailyRate(selectedProperty?.catalogApartment)
         ? (catalogRent(
             selectedProperty?.catalogSlug,
             initialData.checkIn,
             initialData.checkOut,
+            selectedProperty?.catalogApartment,
           )?.total ?? 0)
         : selectedProperty?.rent || 0,
       deposit: selectedProperty?.deposit || 0,
     };
   });
   const [automaticRent, setAutomaticRent] = useState(
-    !existing && hasCatalogDailyRate(selectedProperty?.catalogSlug),
+    !existing && hasCatalogDailyRate(selectedProperty?.catalogApartment),
   );
   const [discount, setDiscount] = useState(0);
   const [preview, setPreview] = useState(false);
@@ -128,13 +132,12 @@ export function ContractForm({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const property = properties.find((p) => p.id === data.propertyId);
-  const apartment = property?.catalogSlug
-    ? findApartment(property.catalogSlug)
-    : undefined;
+  const apartment = property?.catalogApartment;
   const suggestedRent = catalogRent(
     property?.catalogSlug,
     data.checkIn,
     data.checkOut,
+    apartment,
   );
   function update(key: keyof ContractInput, value: string | number) {
     if (key === "rent") {
@@ -148,6 +151,7 @@ export function ContractForm({
           property?.catalogSlug,
           next.checkIn,
           next.checkOut,
+          property?.catalogApartment,
         );
         next.rent =
           calculated &&
@@ -316,16 +320,19 @@ export function ContractForm({
                           (p) => p.id === e.target.value,
                         );
                         const propertyId = e.target.value;
-                        setAutomaticRent(hasCatalogDailyRate(p?.catalogSlug));
+                        setAutomaticRent(
+                          hasCatalogDailyRate(p?.catalogApartment),
+                        );
                         setDiscount(0);
                         setData((previous) => ({
                           ...previous,
                           propertyId,
-                          rent: hasCatalogDailyRate(p?.catalogSlug)
+                          rent: hasCatalogDailyRate(p?.catalogApartment)
                             ? (catalogRent(
                                 p?.catalogSlug,
                                 previous.checkIn,
                                 previous.checkOut,
+                                p?.catalogApartment,
                               )?.total ?? 0)
                             : p?.rent || 0,
                           deposit: p?.deposit || 0,
@@ -390,7 +397,7 @@ export function ContractForm({
                       </Link>
                       <p className="mt-2">
                         {" "}
-                        {hasCatalogDailyRate(apartment.slug) ? (
+                        {hasCatalogDailyRate(apartment) ? (
                           existing && !automaticRent ? (
                             <T text="Сумма сохранена в черновике и не пересчитывается автоматически. При необходимости запустите пересчёт." />
                           ) : (
