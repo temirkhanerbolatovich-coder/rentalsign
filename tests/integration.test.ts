@@ -1,4 +1,4 @@
-import { after, before, test } from "node:test";
+import { after, before, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -71,6 +71,21 @@ before(async () => {
     additionalTerms: "Вымышленный договор",
     ...defaultTerms,
   };
+});
+beforeEach(async () => {
+  const property = await db.property.create({
+    data: {
+      ownerId,
+      name: "ДЕМО • Изолированный объект",
+      address: "Вымышленная улица, 1",
+      type: "APARTMENT",
+      unit: "1",
+      description: "Данные исключительно вымышлены",
+      rent: 20000,
+      deposit: 10000,
+    },
+  });
+  input.propertyId = property.id;
 });
 after(async () => {
   await db?.$disconnect();

@@ -12,6 +12,7 @@ import { appOrigin } from "@/lib/config";
 import { AppError } from "@/lib/errors";
 import { makeSnapshot, ownedContract } from "@/repositories/contracts";
 import { effectiveStatus } from "@/domain/contracts";
+import { assertDatesAvailable } from "@/services/contract-availability";
 import { audit } from "@/audit/events";
 import type { ContractInput, ContractSnapshot } from "@/validation/schemas";
 export async function createContract(ownerId: string, input: ContractInput) {
@@ -21,6 +22,7 @@ export async function createContract(ownerId: string, input: ContractInput) {
     await makeSnapshot(ownerId, input, number, createdAt),
   );
   return transaction(async (tx) => {
+    await assertDatesAvailable(tx, ownerId, input);
     const contract = await tx.contract.create({
       data: {
         ownerId,
@@ -45,6 +47,7 @@ export async function updateDraft(
     await makeSnapshot(ownerId, input, contract.number, contract.createdAt),
   );
   return transaction(async (tx) => {
+    await assertDatesAvailable(tx, ownerId, input, id);
     const result = await tx.contract.updateMany({
       where: { id, ownerId, status: "DRAFT", revision },
       data: {
@@ -79,6 +82,8 @@ export async function issueLink(
       include: { versions: true },
     });
     if (!contract) throw new AppError(404, "Договор не найден");
+    const snapshot = JSON.parse(contract.content) as ContractSnapshot;
+    await assertDatesAvailable(tx, ownerId, snapshot, id);
     const updated = await tx.contract.updateMany({
       where: { id, ownerId, status: { not: "DEMO_SIGNED" }, revision },
       data: { status: "PENDING", revision: { increment: 1 } },

@@ -101,6 +101,14 @@ test("catalog pricing can be adjusted and issued contracts appear as private-saf
   const { url } = await issued.json();
   let publicData = await (await request.get(publicUrl)).json();
   expect(publicData).toContainEqual(booking);
+  const overlapping = await page.request.post("/api/contracts", {
+    headers: { Origin: origin },
+    data: input,
+  });
+  expect(overlapping.status()).toBe(409);
+  expect((await overlapping.json()).error).toContain(
+    "заняты или забронированы",
+  );
   for (const item of publicData)
     expect(Object.keys(item).sort()).toEqual([
       "endDate",

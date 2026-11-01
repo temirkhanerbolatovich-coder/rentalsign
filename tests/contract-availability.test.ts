@@ -307,3 +307,143 @@ test("another owner's contract for the same catalog slug is private to their sch
     ).some((item) => item.id === draft.id),
   );
 });
+
+test("occupied dates reject contract creation, editing and link creation without mutating drafts", async () => {
+  const privateProperty = await db.property.create({
+    data: {
+      ownerId,
+      name: "Проверка занятости",
+      address: "Тест",
+      type: "APARTMENT",
+      unit: "",
+      description: "",
+      rent: 0,
+      deposit: 0,
+    },
+  });
+  const input = {
+    propertyId: privateProperty.id,
+    landlordName: "Тест",
+    landlordId: "",
+    landlordPhone: "+7 000 000 00 00",
+    tenantName: "Гость",
+    tenantId: "",
+    tenantPhone: "+7 000 000 00 00",
+    checkIn: "2090-05-01T14:00:00+05:00",
+    checkOut: "2090-05-03T12:00:00+05:00",
+    rent: 10000,
+    deposit: 0,
+    additionalTerms: "",
+    ...defaultTerms,
+  };
+  const first = await contracts.createContract(ownerId, input);
+  const draft = await contracts.createContract(ownerId, input);
+  await contracts.issueLink(ownerId, first.id, 24, first.revision);
+  await assert.rejects(contracts.createContract(ownerId, input), {
+    status: 409,
+  });
+  await assert.rejects(
+    contracts.updateDraft(ownerId, draft.id, input, draft.revision),
+    { status: 409 },
+  );
+  await assert.rejects(
+    contracts.issueLink(ownerId, draft.id, 24, draft.revision),
+    { status: 409 },
+  );
+  assert.equal(
+    (await db.contract.findUniqueOrThrow({ where: { id: draft.id } })).status,
+    "DRAFT",
+  );
+  await contracts.revokeLink(ownerId, first.id);
+  await contracts.issueLink(ownerId, draft.id, 24, draft.revision);
+});
+
+test("manual occupied and reserved ranges block inclusive checkout dates", async () => {
+  const input = {
+    propertyId,
+    landlordName: "Тест",
+    landlordId: "",
+    landlordPhone: "+7 000 000 00 00",
+    tenantName: "Гость",
+    tenantId: "",
+    tenantPhone: "+7 000 000 00 00",
+    checkIn: "2091-05-01T14:00:00+05:00",
+    checkOut: "2091-05-03T12:00:00+05:00",
+    rent: 10000,
+    deposit: 0,
+    additionalTerms: "",
+    ...defaultTerms,
+  };
+  const mark = await db.availability.create({
+    data: {
+      ownerId,
+      catalogSlug: apartment.slug,
+      startDate: "2091-05-03",
+      endDate: "2091-05-04",
+      status: "occupied",
+    },
+  });
+  await assert.rejects(contracts.createContract(ownerId, input), {
+    status: 409,
+  });
+  await db.availability.update({
+    where: { id: mark.id },
+    data: { status: "reserved" },
+  });
+  await assert.rejects(contracts.createContract(ownerId, input), {
+    status: 409,
+  });
+  await db.availability.delete({ where: { id: mark.id } });
+  assert.equal(
+    (await contracts.createContract(ownerId, input)).status,
+    "DRAFT",
+  );
+});
+
+test(
+  "concurrent link creation cannot reserve the same dates twice",
+  { skip: !testPostgres },
+  async () => {
+    const property = await db.property.create({
+      data: {
+        ownerId,
+        name: "Проверка гонки",
+        address: "Тест",
+        type: "APARTMENT",
+        unit: "",
+        description: "",
+        rent: 0,
+        deposit: 0,
+      },
+    });
+    const input = {
+      propertyId: property.id,
+      landlordName: "Тест",
+      landlordId: "",
+      landlordPhone: "+7 000 000 00 00",
+      tenantName: "Гость",
+      tenantId: "",
+      tenantPhone: "+7 000 000 00 00",
+      checkIn: "2092-05-01T14:00:00+05:00",
+      checkOut: "2092-05-03T12:00:00+05:00",
+      rent: 10000,
+      deposit: 0,
+      additionalTerms: "",
+      ...defaultTerms,
+    };
+    const one = await contracts.createContract(ownerId, input);
+    const two = await contracts.createContract(ownerId, input);
+    const results = await Promise.allSettled([
+      contracts.issueLink(ownerId, one.id, 24, one.revision),
+      contracts.issueLink(ownerId, two.id, 24, two.revision),
+    ]);
+    assert.equal(
+      results.filter((entry) => entry.status === "fulfilled").length,
+      1,
+    );
+    const failed = results.find(
+      (entry) => entry.status === "rejected",
+    ) as PromiseRejectedResult;
+    assert.equal(failed.reason.status, 409);
+  },
+);
