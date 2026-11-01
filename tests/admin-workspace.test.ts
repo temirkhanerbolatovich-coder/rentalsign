@@ -215,12 +215,12 @@ test("cleanup archives demo properties when a dependent contract is real or malf
   assert.equal(await db.contract.count({ where: { ownerId: admin.id } }), 3);
 });
 
-test("workspace imports all seven apartments once per owner and preserves edits and archives", async () => {
+test("workspace imports all current apartments once per owner and preserves edits and archives", async () => {
   const admin = await owner();
   const other = await owner();
   const first = await workspace.prepareOwnerWorkspace(admin.id);
   assert.equal(first.imported, apartments.length);
-  assert.equal(await db.property.count({ where: { ownerId: admin.id } }), 7);
+  assert.equal(await db.property.count({ where: { ownerId: admin.id } }), apartments.length);
   assert.equal(await db.property.count({ where: { ownerId: other.id } }), 0);
   const property = await db.property.findFirstOrThrow({
     where: { ownerId: admin.id, catalogSlug: apartments[0].slug },
@@ -235,7 +235,7 @@ test("workspace imports all seven apartments once per owner and preserves edits 
   });
   const repeated = await workspace.prepareOwnerWorkspace(admin.id);
   assert.equal(repeated.imported, 0);
-  assert.equal(await db.property.count({ where: { ownerId: admin.id } }), 7);
+  assert.equal(await db.property.count({ where: { ownerId: admin.id } }), apartments.length);
   const retained = await db.property.findUniqueOrThrow({
     where: { id: property.id },
   });
@@ -243,7 +243,7 @@ test("workspace imports all seven apartments once per owner and preserves edits 
   assert.equal(retained.rent, 75000);
   assert.equal(retained.archived, true);
   await workspace.prepareOwnerWorkspace(other.id);
-  assert.equal(await db.property.count({ where: { ownerId: other.id } }), 7);
+  assert.equal(await db.property.count({ where: { ownerId: other.id } }), apartments.length);
 });
 
 test("private contract defaults validate strictly and are isolated between owners", async () => {

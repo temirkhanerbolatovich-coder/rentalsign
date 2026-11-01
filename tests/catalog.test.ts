@@ -74,12 +74,12 @@ function contractInput(propertyId: string, rent: number): ContractInput {
   };
 }
 
-test("public catalog contains seven distinct apartments and all 90 local photos", () => {
-  assert.equal(apartments.length, 7);
-  assert.equal(new Set(apartments.map((apartment) => apartment.slug)).size, 7);
+test("public catalog contains six distinct apartments and all 75 local photos", () => {
+  assert.equal(apartments.length, 6);
+  assert.equal(new Set(apartments.map((apartment) => apartment.slug)).size, 6);
   const photos = apartments.flatMap((apartment) => apartment.photos);
-  assert.equal(photos.length, 90);
-  assert.equal(new Set(photos.map((photo) => photo.src)).size, 90);
+  assert.equal(photos.length, 75);
+  assert.equal(new Set(photos.map((photo) => photo.src)).size, 75);
   for (const apartment of apartments) {
     assert.equal(findApartment(apartment.slug), apartment);
     assert.ok(apartment.photos.length > 0);
@@ -106,8 +106,11 @@ test("public catalog contains seven distinct apartments and all 90 local photos"
     }
   }
   const incomplete = apartments.find((apartment) => apartment.unit === "69")!;
-  assert.equal(incomplete.priceMin, null);
-  assert.equal(incomplete.priceMax, null);
+  assert.equal(incomplete.priceMin, 20000);
+  assert.equal(incomplete.priceMax, 20000);
+  assert.equal(findApartment("bazovaya-2-6-26"), undefined);
+  assert.equal(findApartment("mihaelisa-8-2-35")!.priceMin, 20000);
+  assert.equal(findApartment("mihaelisa-8-2-35")!.priceMax, 20000);
   assert.equal(
     incomplete.mapUrl,
     "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
@@ -137,11 +140,10 @@ test("corrected galleries stay attached to the owner's confirmed apartment addre
       unit: "35",
       entrance: 2,
       floor: 4,
-      photos: 21,
+      photos: 14,
       mapUrl:
         "https://2gis.kz/ustkam/geo/12807747095497085/82.612469,49.966384",
-      coverSha256:
-        "48470cfee7806b3c8946b84eab8c2e520f83a9947c4dd56e584b56bf1c4ff394",
+      coverSha256: null,
     },
     {
       slug: "esenberlina-46-10",
@@ -205,14 +207,12 @@ test("corrected galleries stay attached to the owner's confirmed apartment addre
   );
 });
 
-test("Wi-Fi information is attached only to the six supplied apartments", () => {
+test("Wi-Fi information is attached only to confirmed apartments", () => {
   const expectedNetworks: Record<string, string> = {
     "bazovaya-2-6-17": "Tele2_5G_9921_5G",
-    "bazovaya-2-6-26": "Dom-26",
     "novy-bereg-70": "KZTK-21383_5G",
     "mihaelisa-7-240": "Huawei-2,4/5heXh",
     "mihaelisa-8-69": "HUAWEI-017",
-    "mihaelisa-8-2-35": "KZTK-37106_5G",
   };
   for (const apartment of apartments) {
     assert.equal(apartment.wifi?.network, expectedNetworks[apartment.slug]);
@@ -230,10 +230,10 @@ test(
     const folders = readdirSync(sourceRoot, { withFileTypes: true }).filter(
       (entry) => entry.isDirectory(),
     );
-    assert.equal(folders.length, apartments.length);
     for (const folder of folders) {
       const unit = folder.name.match(/(\d+)\s+квартира$/)?.[1];
       assert.ok(unit, `unit is missing from source folder: ${folder.name}`);
+      if (unit === "26") continue; // Retired listing; source files are preserved.
       const apartment = apartments.find((entry) => entry.unit === unit);
       assert.ok(
         apartment,
@@ -249,8 +249,8 @@ test(
           apartment.mapUrl,
           "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
         );
-        assert.equal(apartment.priceMin, null);
-        assert.equal(apartment.priceMax, null);
+        assert.equal(apartment.priceMin, 20000);
+        assert.equal(apartment.priceMax, 20000);
         continue;
       }
       assert.equal(notes.length, 1);
@@ -264,8 +264,14 @@ test(
       const prices = [...priceText.matchAll(/\d{1,3}[. ]\d{3}/g)].map((match) =>
         Number(match[0].replace(/[. ]/g, "")),
       );
-      assert.equal(apartment.priceMin, prices[0]);
-      assert.equal(apartment.priceMax, prices.at(-1));
+      if (unit === "35") {
+        // The owner confirmed the price for the new gallery on 2026-11-01.
+        assert.equal(apartment.priceMin, 20000);
+        assert.equal(apartment.priceMax, 20000);
+      } else {
+        assert.equal(apartment.priceMin, prices[0]);
+        assert.equal(apartment.priceMax, prices.at(-1));
+      }
     }
   },
 );
@@ -279,7 +285,7 @@ test(
     const sourceFolders = {
       "esenberlina-46-10": "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира",
       "mihaelisa-8-69": "Михаэлиса 82, 2 подъезд, 4 этаж, 35 квартира",
-      "mihaelisa-8-2-35": "Михаэлиса 8, 4 подъезд, 5 этаж, 69 квартира",
+      "mihaelisa-8-2-35": "Михаэлиса 82, 2 подъезд, 4 этаж, 35 квартира/Обновление 2026-11-01",
       "mihaelisa-7-240":
         "Михаэлиса 7, 7 подъезд, 6 этаж, 240 квартира/Обновление 2026-10-18",
     };

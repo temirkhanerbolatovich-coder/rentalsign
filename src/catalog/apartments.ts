@@ -228,75 +228,6 @@ export const apartments: Apartment[] = [
     ]
   },
   {
-    "slug": "bazovaya-2-6-26",
-    "title": "Квартира на Базовой, 2/6 · № 26",
-    "address": "ул. Базовая, 2/6",
-    "residentialComplex": null,
-    "description": null,
-    "arrivalInstructions": null,
-    "wifi": {
-      "network": "Dom-26",
-      "password": "Qwerty321!"
-    },
-    "unit": "26",
-    "entrance": 1,
-    "floor": 8,
-    "priceMin": 40000,
-    "priceMax": 45000,
-    "pricingPeriod": "unconfirmed",
-    "mapUrl": "https://2gis.kz/ustkam/geo/70030076291491530/82.630431,49.924963",
-    "photos": [
-      {
-        "src": "/apartments/bazovaya-2-6-26/01-a10002327da7.webp",
-        "width": 1600,
-        "height": 1200,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 1"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/02-1cd2a33fb13e.webp",
-        "width": 1200,
-        "height": 1600,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 2"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/03-d5a0a83d2a0c.webp",
-        "width": 1200,
-        "height": 1600,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 3"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/04-5f79af4ea67c.webp",
-        "width": 1600,
-        "height": 1200,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 4"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/05-a3ea2f47cd9a.webp",
-        "width": 1200,
-        "height": 1600,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 5"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/06-f5dca2109ecf.webp",
-        "width": 1200,
-        "height": 1600,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 6"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/07-fae112641317.webp",
-        "width": 1200,
-        "height": 1600,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 7"
-      },
-      {
-        "src": "/apartments/bazovaya-2-6-26/08-97e0773e924a.webp",
-        "width": 1200,
-        "height": 1600,
-        "alt": "Интерьер квартиры: ул. Базовая, 2/6, фото 8"
-      }
-    ]
-  },
-  {
     "slug": "novy-bereg-70",
     "title": "Квартира в ЖК Novy Bereg",
     "address": "ул. Базовая, 4",
@@ -508,8 +439,8 @@ export const apartments: Apartment[] = [
     "unit": "69",
     "entrance": 4,
     "floor": 5,
-    "priceMin": null,
-    "priceMax": null,
+    "priceMin": 20000,
+    "priceMax": 20000,
     "pricingPeriod": "unconfirmed",
     "mapUrl": "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
     "photos": [
@@ -570,10 +501,7 @@ export const apartments: Apartment[] = [
     "residentialComplex": null,
     "description": null,
     "arrivalInstructions": null,
-    "wifi": {
-      "network": "KZTK-37106_5G",
-      "password": "KeFU6SHR"
-    },
+    "wifi": null,
     "unit": "35",
     "entrance": 2,
     "floor": 4,
@@ -583,130 +511,88 @@ export const apartments: Apartment[] = [
     "mapUrl": "https://2gis.kz/ustkam/geo/12807747095497085/82.612469,49.966384",
     "photos": [
       {
-        "src": "/apartments/mihaelisa-8-2-35/01-48470cfee780.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/01-e240ce569c8e.webp",
+        "width": 1087,
+        "height": 1447,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 1"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/02-e73e95b2d313.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/02-1fca58942929.webp",
+        "width": 1085,
+        "height": 1450,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 2"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/03-7f0d5518861e.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/03-ef327212a7fa.webp",
+        "width": 1195,
+        "height": 1316,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 3"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/04-def419bde83d.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/04-82c7b229b0c9.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 4"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/05-a4db43f81834.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/05-fe83830682b4.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 5"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/06-2cf0735b59d0.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/06-db6341f79eb2.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 6"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/07-25a228f83866.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/07-559d68402be9.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 7"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/08-7a559ead66b8.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/08-b8f935a20d6c.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 8"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/09-6180711aa172.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/09-3c74a23cf588.webp",
+        "width": 1085,
+        "height": 1450,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 9"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/10-df055883f40d.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/10-655018488abc.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 10"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/11-2368565674a9.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/11-e3bbdf72a53c.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 11"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/12-4258331c0f10.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/12-67edf9728bc0.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 12"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/13-75809abf30cd.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/13-30f283c61f34.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 13"
       },
       {
-        "src": "/apartments/mihaelisa-8-2-35/14-0ce7cc3bb7be.webp",
-        "width": 960,
-        "height": 1280,
+        "src": "/apartments/mihaelisa-8-2-35/14-e1dcd0af0467.webp",
+        "width": 1086,
+        "height": 1448,
         "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 14"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/15-47a9b6d8f42a.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 15"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/16-9b4516544a17.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 16"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/17-9cafb9ae5462.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 17"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/18-22677fffe6c6.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 18"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/19-4fff684a2309.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 19"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/20-d1185113453e.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 20"
-      },
-      {
-        "src": "/apartments/mihaelisa-8-2-35/21-0b39b7319dfc.webp",
-        "width": 960,
-        "height": 1280,
-        "alt": "Интерьер квартиры: ул. Михаэлиса, 8/2, фото 21"
       }
     ]
   }

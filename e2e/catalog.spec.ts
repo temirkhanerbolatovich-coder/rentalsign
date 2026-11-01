@@ -16,6 +16,13 @@ test("public catalog supports address search, price filters and sorting without 
     exact: true,
   });
   await expect(catalog.getByRole("article")).toHaveCount(apartments.length);
+  for (const title of ["Квартира на Михаэлиса, 8", "Квартира на Михаэлиса, 8/2"]) {
+    const card = catalog.getByRole("article").filter({
+      has: page.getByRole("heading", { name: title, exact: true }),
+    });
+    await expect(card).toContainText(/20\s*000/);
+  }
+  await expect(catalog.getByRole("heading", { name: "Квартира на Базовой, 2/6 · № 26" })).toHaveCount(0);
   await catalog.getByRole("article").last().scrollIntoViewIfNeeded();
   await expect
     .poll(() =>
@@ -69,14 +76,9 @@ test("public catalog supports address search, price filters and sorting without 
   await expect(
     catalog.getByRole("article").first().getByRole("heading"),
   ).toHaveText(cheapest.title);
-  const missing = apartments.find((apartment) => apartment.priceMin === null)!;
-  await expect(catalog.getByRole("article").last()).toContainText(
-    missing.title,
-  );
-  await expect(catalog.getByRole("article").last()).toContainText(
-    "Цена по запросу",
-  );
   expect((await page.request.get("/api/properties")).status()).toBe(401);
+  const retired = await page.goto("/apartments/bazovaya-2-6-26");
+  expect(retired?.status()).toBe(404);
   const unknown = await page.goto("/apartments/not-a-real-apartment");
   expect(unknown?.status()).toBe(404);
 });
@@ -157,7 +159,7 @@ test("corrected apartment details expose the confirmed addresses, photo sets and
       unit: "35",
       entrance: 2,
       floor: 4,
-      photos: 21,
+      photos: 14,
       map: "https://2gis.kz/ustkam/geo/12807747095497085/82.612469,49.966384",
     },
     {
