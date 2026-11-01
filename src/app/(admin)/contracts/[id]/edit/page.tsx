@@ -1,3 +1,4 @@
+import { getPropertyGallery } from "@/services/property-photos";
 import { T } from "@/components/language";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -48,17 +49,20 @@ export default async function Edit({
         revision: contract.revision,
         snapshot: JSON.parse(contract.content) as ContractSnapshot,
       }}
-      properties={properties.map((p) => ({
-        id: p.id,
-        name: p.name,
-        address: p.address,
-        type: p.type as PropertyInput["type"],
-        unit: p.unit,
-        description: p.description,
-        rent: p.rent,
-        deposit: p.deposit,
-        catalogSlug: p.catalogSlug,
-      }))}
+      properties={await Promise.all(
+        properties.map(async (p) => ({
+          id: p.id,
+          name: p.name,
+          address: p.address,
+          type: p.type as PropertyInput["type"],
+          unit: p.unit,
+          description: p.description,
+          rent: p.rent,
+          deposit: p.deposit,
+          catalogSlug: p.catalogSlug,
+          photo: (await getPropertyGallery(p)).photos[0] ?? null,
+        })),
+      )}
     />
   );
 }

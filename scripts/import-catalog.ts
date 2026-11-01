@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { lstat, mkdir, readFile, readdir, realpath, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -185,7 +185,6 @@ async function verifySourceNote(source: ApartmentSource, folder: string) {
 
 async function importCatalog() {
   const catalog = [];
-  const generatedFiles = new Map<string, Set<string>>();
   let photoCount = 0;
   let outputBytes = 0;
   await mkdir(assetsRoot, { recursive: true });
@@ -204,10 +203,8 @@ async function importCatalog() {
     const orderedFilenames = [source.coverFilename, ...filenames.filter((name) => name !== source.coverFilename)];
     const destination = childPath(assetsRoot, source.slug);
     await mkdir(destination, { recursive: true });
-    // Re-check actual filesystem paths before writing or pruning generated assets.
+    // Re-check actual filesystem paths before writing generated assets.
     childPath(resolvedAssetsRoot, path.relative(resolvedAssetsRoot, await realpath(destination)));
-    const outputNames = new Set<string>();
-    generatedFiles.set(destination, outputNames);
     const photos = [];
 
     for (const [index, filename] of orderedFilenames.entries()) {
@@ -221,7 +218,6 @@ async function importCatalog() {
       const contentHash = createHash("sha256").update(data).digest("hex").slice(0, 12);
       const outputName = `${String(index + 1).padStart(2, "0")}-${contentHash}.webp`;
       await writeFile(childPath(destination, outputName), data);
-      outputNames.add(outputName);
       photos.push({
         src: `/apartments/${source.slug}/${outputName}`,
         width: info.width,
@@ -257,16 +253,7 @@ async function importCatalog() {
   const lookup = `\n\nexport function findApartment(slug: string): Apartment | undefined {\n  return apartments.find((apartment) => apartment.slug === slug);\n}\n`;
   await mkdir(path.dirname(dataPath), { recursive: true });
   await writeFile(dataPath, `${header}${types}export const apartments: Apartment[] = ${JSON.stringify(catalog, null, 2)};${lookup}`, "utf8");
-  // Only generated WebP files are pruned, after every new asset and data file exists.
-  // Source photographs and unrelated files are never removed.
-  for (const [destination, outputNames] of generatedFiles) {
-    for (const filename of await readdir(destination)) {
-      if (!/^\d{2}(?:-[a-f0-9]{12})?\.webp$/.test(filename) || outputNames.has(filename)) continue;
-      const obsoletePath = childPath(destination, filename);
-      if (!(await lstat(obsoletePath)).isFile()) continue;
-      await unlink(obsoletePath);
-    }
-  }
+  // Keep old URLs: saved galleries can still reference an earlier catalog image.
   console.log(`Imported ${catalog.length} apartments, ${photoCount} photos, ${(outputBytes / 1024 / 1024).toFixed(2)} MiB. Originals preserved.`);
 }
 

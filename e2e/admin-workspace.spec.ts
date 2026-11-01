@@ -153,7 +153,7 @@ test("private template and apartment workspace prepare a contract with minimal r
   const linked = properties.filter(
     (property: { catalogSlug: string | null }) => property.catalogSlug,
   );
-  expect(linked).toHaveLength(7);
+  expect(linked).toHaveLength(apartments.length);
   const apartment = apartments[0];
   const property = linked.find(
     (entry: { catalogSlug: string }) => entry.catalogSlug === apartment.slug,
@@ -183,7 +183,7 @@ test("private template and apartment workspace prepare a contract with minimal r
   await expect(page.getByRole("status")).toHaveText("Объект обновлён");
   await page.getByRole("searchbox", { name: "Поиск по квартирам" }).clear();
   const coverImages = page.locator("article img");
-  await expect(coverImages).toHaveCount(7);
+  await expect(coverImages).toHaveCount(apartments.length);
   for (const image of await coverImages.all()) {
     await image.scrollIntoViewIfNeeded();
     await expect

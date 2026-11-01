@@ -1,26 +1,41 @@
 import { requirePageAdmin } from "@/auth/session";
 import { db } from "@/lib/db";
+import { findApartment } from "@/catalog/apartments";
 import { PropertiesManager } from "@/components/properties-manager";
+import {
+  catalogOwnerEmail,
+  getPropertyGallery,
+} from "@/services/property-photos";
 import type { PropertyInput } from "@/validation/schemas";
 export default async function Properties() {
+  const admin = await requirePageAdmin();
   const properties = await db.property.findMany({
-    where: { ownerId: (await requirePageAdmin()).id },
+    where: { ownerId: admin.id },
     orderBy: { createdAt: "desc" },
   });
   return (
     <PropertiesManager
-      properties={properties.map((p) => ({
-        id: p.id,
-        name: p.name,
-        address: p.address,
-        type: p.type as PropertyInput["type"],
-        unit: p.unit,
-        description: p.description,
-        rent: p.rent,
-        deposit: p.deposit,
-        archived: p.archived,
-        catalogSlug: p.catalogSlug,
-      }))}
+      properties={await Promise.all(
+        properties.map(async (p) => ({
+          id: p.id,
+          name: p.name,
+          address: p.address,
+          type: p.type as PropertyInput["type"],
+          unit: p.unit,
+          description: p.description,
+          rent: p.rent,
+          deposit: p.deposit,
+          archived: p.archived,
+          catalogSlug: p.catalogSlug,
+          gallery: await getPropertyGallery(p),
+          publishesPhotos: Boolean(
+            p.catalogSlug &&
+            findApartment(p.catalogSlug) &&
+            catalogOwnerEmail() &&
+            admin.email.toLowerCase() === catalogOwnerEmail(),
+          ),
+        })),
+      )}
     />
   );
 }

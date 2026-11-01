@@ -15,10 +15,13 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { apartments, findApartment } from "@/catalog/apartments";
+import { getCatalogApartments } from "@/services/property-photos";
 import { ApartmentGallery } from "@/components/apartment-gallery";
 import { ApartmentPrice } from "@/components/apartment-price";
 import { DemoNotice } from "@/components/demo-notice";
 import { Button } from "@/components/ui/button";
+
+export const dynamic = "force-dynamic";
 
 type ApartmentPageProps = { params: Promise<{ slug: string }> };
 
@@ -41,7 +44,9 @@ export async function generateMetadata({
 
 export default async function ApartmentPage({ params }: ApartmentPageProps) {
   const { slug } = await params;
-  const apartment = findApartment(slug);
+  const apartment = (await getCatalogApartments()).find(
+    (entry) => entry.slug === slug,
+  );
   if (!apartment) notFound();
 
   return (

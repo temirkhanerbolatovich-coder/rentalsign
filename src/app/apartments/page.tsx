@@ -1,7 +1,7 @@
 import { T } from "@/components/language";
 import type { Metadata } from "next";
 import { MapPin } from "lucide-react";
-import { apartments } from "@/catalog/apartments";
+import { getCatalogApartments } from "@/services/property-photos";
 import { CatalogBrowser } from "@/components/catalog-browser";
 
 export const metadata: Metadata = {
@@ -10,7 +10,10 @@ export const metadata: Metadata = {
     "Фотографии квартир, адреса, указанные владельцем цены и расположение в 2ГИС. Условия аренды согласуются с владельцем.",
 };
 
-export default function ApartmentsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ApartmentsPage() {
+  const apartments = await getCatalogApartments();
   return (
     <>
       <div className="mb-6 max-w-3xl sm:mb-8">

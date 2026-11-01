@@ -50,6 +50,7 @@ function PhotoContent({
       )}
       <Image
         {...imageProps}
+        unoptimized={imageProps.src.startsWith("/api/property-photos/")}
         alt={alt}
         fill
         onLoad={() => setState("loaded")}

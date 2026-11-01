@@ -55,7 +55,12 @@ export function ApartmentGallery({
       movePhoto(distance < 0 ? 1 : -1);
   }
 
-  if (!photo) return null;
+  if (!photo)
+    return (
+      <div className="grid min-h-40 place-items-center rounded-2xl bg-stone-100 p-6 text-sm text-slate-600">
+        <T text="Фото отсутствует" />
+      </div>
+    );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

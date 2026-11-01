@@ -32,7 +32,11 @@ import {
   type ContractSnapshot,
   type PropertyInput,
 } from "@/validation/schemas";
-type FormProperty = PropertyInput & { id: string; catalogSlug?: string | null };
+type FormProperty = PropertyInput & {
+  id: string;
+  catalogSlug?: string | null;
+  photo: { src: string; alt: string } | null;
+};
 function localTime(value: string) {
   return new Date(new Date(value).getTime() + 5 * 3600000)
     .toISOString()
@@ -270,10 +274,13 @@ export function ContractForm({
                   </label>
                   {property && (
                     <div className="mb-5 flex gap-4 rounded-lg bg-slate-50 p-4">
-                      {apartment?.photos[0] && (
+                      {property.photo && (
                         <Image
-                          src={apartment.photos[0].src}
-                          alt={apartment.photos[0].alt}
+                          src={property.photo.src}
+                          alt={property.photo.alt}
+                          unoptimized={property.photo.src.startsWith(
+                            "/api/property-photos/",
+                          )}
                           width={80}
                           height={80}
                           className="size-20 shrink-0 rounded-md object-cover"

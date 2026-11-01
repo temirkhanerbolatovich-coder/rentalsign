@@ -1,3 +1,4 @@
+import { getPropertyGallery } from "@/services/property-photos";
 import { requirePageAdmin } from "@/auth/session";
 import { db } from "@/lib/db";
 import { ContractForm } from "@/components/contract-form";
@@ -43,17 +44,20 @@ export default async function NewContract({
       templateDefaults={await getContractTemplate(admin.id)}
       selectedPropertyId={selectedProperty?.id}
       key={selectedProperty?.id || "new"}
-      properties={properties.map((p) => ({
-        id: p.id,
-        name: p.name,
-        address: p.address,
-        type: p.type as PropertyInput["type"],
-        unit: p.unit,
-        description: p.description,
-        rent: p.rent,
-        deposit: p.deposit,
-        catalogSlug: p.catalogSlug,
-      }))}
+      properties={await Promise.all(
+        properties.map(async (p) => ({
+          id: p.id,
+          name: p.name,
+          address: p.address,
+          type: p.type as PropertyInput["type"],
+          unit: p.unit,
+          description: p.description,
+          rent: p.rent,
+          deposit: p.deposit,
+          catalogSlug: p.catalogSlug,
+          photo: (await getPropertyGallery(p)).photos[0] ?? null,
+        })),
+      )}
     />
   );
 }

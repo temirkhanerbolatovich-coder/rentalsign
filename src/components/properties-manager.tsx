@@ -33,11 +33,15 @@ import { clientApi } from "./client-api";
 import { money, propertyTypes } from "@/domain/contracts";
 import { propertySchema, type PropertyInput } from "@/validation/schemas";
 import { findApartment } from "@/catalog/apartments";
+import { PhotoManager } from "./photo-manager";
+import type { Gallery } from "@/services/property-photos";
 import { ApartmentPrice } from "./apartment-price";
 type PropertyRow = PropertyInput & {
   id: string;
   archived: boolean;
   catalogSlug?: string | null;
+  gallery: Gallery;
+  publishesPhotos: boolean;
 };
 export function PropertiesManager({
   properties,
@@ -46,6 +50,7 @@ export function PropertiesManager({
 }) {
   const language = useLanguage();
   const router = useRouter();
+  const [photoProperty, setPhotoProperty] = useState<PropertyRow | null>(null);
   const [editing, setEditing] = useState<PropertyRow | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -221,7 +226,7 @@ export function PropertiesManager({
           const apartment = property.catalogSlug
             ? findApartment(property.catalogSlug)
             : undefined;
-          const cover = apartment?.photos[0];
+          const cover = property.gallery.photos[0];
           return (
             <article
               key={property.id}
@@ -236,6 +241,7 @@ export function PropertiesManager({
                   <Image
                     src={cover.src}
                     alt={cover.alt}
+                    unoptimized={cover.src.startsWith("/api/property-photos/")}
                     fill
                     sizes="(max-width: 1024px) 100vw, 33vw"
                     className="object-cover"
@@ -247,9 +253,23 @@ export function PropertiesManager({
                   </span>
                   <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-slate-950/70 px-2.5 py-1 text-xs text-white">
                     <Images size={14} />
-                    {apartment.photos.length} <T text="фото" />{" "}
+                    {property.gallery.photos.length} <T text="фото" />{" "}
                   </span>
                 </Link>
+              ) : cover ? (
+                <div className="relative aspect-[16/10] bg-slate-100">
+                  <Image
+                    src={cover.src}
+                    alt={cover.alt}
+                    fill
+                    unoptimized={cover.src.startsWith("/api/property-photos/")}
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                  <span className="absolute bottom-3 right-3 rounded-md bg-slate-950/70 px-2.5 py-1 text-xs text-white">
+                    {property.gallery.photos.length} <T text="фото" />
+                  </span>
+                </div>
               ) : (
                 <div className="flex h-24 items-center justify-between bg-gradient-to-br from-[#e5eeeb] to-[#f3f6f5] px-6">
                   <Building2
@@ -380,6 +400,13 @@ export function PropertiesManager({
                   <Button
                     size="sm"
                     variant="ghost"
+                    onClick={() => setPhotoProperty(property)}
+                  >
+                    <Images /> <T text="Управлять фото" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
                     onClick={() => edit(property)}
                   >
                     <Pencil /> <T text="Изменить" />{" "}
@@ -453,6 +480,15 @@ export function PropertiesManager({
             )
           )}
         </div>
+      )}
+      {photoProperty && (
+        <PhotoManager
+          property={photoProperty}
+          onClose={() => {
+            setPhotoProperty(null);
+            router.refresh();
+          }}
+        />
       )}
       <Dialog
         open={open}

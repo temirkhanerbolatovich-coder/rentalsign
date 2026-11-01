@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/demo-notice";
 import { ContractsTable } from "@/components/contracts-table";
 import { getContractTemplate } from "@/services/contract-template";
-import { findApartment } from "@/catalog/apartments";
+import { getPropertyGallery } from "@/services/property-photos";
 export default async function Dashboard() {
   const admin = await requirePageAdmin();
   const [contracts, propertyCount, template, linkedProperties] =
@@ -24,11 +24,22 @@ export default async function Dashboard() {
           archived: false,
           catalogSlug: { not: null },
         },
-        select: { id: true, name: true, address: true, catalogSlug: true },
+        select: {
+          id: true,
+          ownerId: true,
+          name: true,
+          address: true,
+          catalogSlug: true,
+        },
         take: 3,
         orderBy: { createdAt: "desc" },
       }),
     ]);
+  const covers = await Promise.all(
+    linkedProperties.map(
+      async (property) => (await getPropertyGallery(property)).photos[0],
+    ),
+  );
   const templateReady = Boolean(
     template.landlordName && template.landlordPhone,
   );
@@ -152,11 +163,8 @@ export default async function Dashboard() {
             </Link>
           </div>
           <div className="grid gap-3 lg:grid-cols-3">
-            {linkedProperties.map((property) => {
-              const apartment = property.catalogSlug
-                ? findApartment(property.catalogSlug)
-                : null;
-              const photo = apartment?.photos[0];
+            {linkedProperties.map((property, index) => {
+              const photo = covers[index];
               return (
                 <Link
                   href="/properties"
@@ -167,6 +175,9 @@ export default async function Dashboard() {
                     <Image
                       src={photo.src}
                       alt=""
+                      unoptimized={photo.src.startsWith(
+                        "/api/property-photos/",
+                      )}
                       width={72}
                       height={64}
                       className="h-16 w-[72px] shrink-0 rounded-md object-cover"

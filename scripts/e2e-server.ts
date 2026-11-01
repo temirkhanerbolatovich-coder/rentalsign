@@ -5,6 +5,7 @@ async function main() {
   const testDatabase = `e2e-${randomBytes(8).toString("hex")}.db`;
   process.env.DATABASE_URL = `file:../tmp/${testDatabase}`;
   process.env.APP_URL = "http://localhost:3100";
+  process.env.CATALOG_OWNER_EMAIL = "photos-owner@e2e.test";
   process.env.TOKEN_ENCRYPTION_KEY = randomBytes(32).toString("hex");
   const password = process.env.E2E_PASSWORD;
   if (!password) throw new Error("E2E_PASSWORD required");
@@ -36,6 +37,8 @@ async function main() {
   for (const email of [
     "availability-owner@e2e.test",
     "availability-other@e2e.test",
+    "photos-owner@e2e.test",
+    "photos-other@e2e.test",
   ]) {
     await db.admin.create({
       data: { email, passwordHash: await hashPassword(password) },

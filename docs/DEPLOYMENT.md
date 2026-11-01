@@ -62,7 +62,8 @@ npm run start:production
 | DATABASE_URL         | Neon PostgreSQL connection URL, TLS sslmode=require; рекомендуется pooled URL |
 | DIRECT_DATABASE_URL  | Прямой Neon URL для миграций, TLS sslmode=require                             |
 | TOKEN_ENCRYPTION_KEY | 32 случайных байта в hex; сохранять при любых рестартах                       |
-| ADMIN_EMAIL          | Email единственного первоначального администратора                            |
+| ADMIN_EMAIL          | Email первоначального администратора; также владелец каталога, если `CATALOG_OWNER_EMAIL` не задан |
+| CATALOG_OWNER_EMAIL | Необязательный email единственного владельца публичных галерей, иначе используется `ADMIN_EMAIL` |
 | ADMIN_PASSWORD       | Случайный пароль 12–128 символов; только для первого запуска                  |
 
 `start:production` проверяет origin, ключ, диапазоны сроков и TLS, применяет PostgreSQL-миграции и создаёт администратора только при пустой таблице Admin. Повторный старт не сбрасывает пароль, не создаёт публичных тестовых аккаунтов и не запускает seed. `/api/health` возвращает 200 только при доступной мигрированной базе, иначе 503; ответ не раскрывает параметры подключения.

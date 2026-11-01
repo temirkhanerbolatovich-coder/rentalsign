@@ -19,6 +19,7 @@ model Admin {
   sessions     Session[]
   properties   Property[]
   contracts    Contract[]
+  availability Availability[]
 }
 
 model Session {
@@ -46,6 +47,7 @@ model Property {
   catalogSlug String?
   createdAt   DateTime   @default(now())
   contracts   Contract[]
+  gallery     PropertyGallery?
 
   @@index([ownerId, archived])
   @@unique([ownerId, catalogSlug])
@@ -113,4 +115,41 @@ model RateBucket {
   expiresAt DateTime
 
   @@index([expiresAt])
+}
+
+// Public calendar contains dates/status only; contract snapshots remain independent.
+model Availability {
+  owner       Admin @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id          String @id @default(cuid())
+  ownerId     String
+  catalogSlug String
+  startDate   String
+  endDate     String
+  status      String
+  createdAt   DateTime @default(now())
+
+  @@index([catalogSlug, startDate, endDate])
+  @@index([ownerId])
+}
+
+// A missing gallery means the original catalog photos are still in use.
+model PropertyGallery {
+  propertyId String @id
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  revision Int @default(0)
+  photos PropertyPhoto[]
+}
+
+model PropertyPhoto {
+  id String @id @default(cuid())
+  propertyId String
+  gallery PropertyGallery @relation(fields: [propertyId], references: [propertyId], onDelete: Cascade)
+  position Int
+  staticSrc String?
+  data Bytes?
+  width Int
+  height Int
+  alt String
+
+  @@index([propertyId, position])
 }
