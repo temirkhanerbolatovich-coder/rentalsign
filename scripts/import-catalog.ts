@@ -47,7 +47,7 @@ const sources: ApartmentSource[] = [
     floor: 4,
     priceMin: 30000,
     priceMax: 35000,
-    pricingPeriod: "unconfirmed",
+    pricingPeriod: "day",
     mapUrl: "https://2gis.kz/ustkam/geo/70030076308891814/82.614717,49.916413",
   },
   {
@@ -67,7 +67,7 @@ const sources: ApartmentSource[] = [
     floor: 6,
     priceMin: 25000,
     priceMax: 25000,
-    pricingPeriod: "unconfirmed",
+    pricingPeriod: "day",
     mapUrl: "https://2gis.kz/ustkam/geo/70030076291491530/82.630437,49.925111",
   },
   {
@@ -87,7 +87,7 @@ const sources: ApartmentSource[] = [
     floor: 9,
     priceMin: 40000,
     priceMax: 45000,
-    pricingPeriod: "unconfirmed",
+    pricingPeriod: "day",
     mapUrl: "https://2gis.kz/ustkam/geo/70030076291491746/82.630611,49.927106",
   },
   {
@@ -107,7 +107,7 @@ const sources: ApartmentSource[] = [
     floor: 6,
     priceMin: 25000,
     priceMax: 25000,
-    pricingPeriod: "unconfirmed",
+    pricingPeriod: "day",
     mapUrl: "https://2gis.kz/ustkam/geo/12807747095505295/82.608168,49.965321",
   },
   {
@@ -127,7 +127,7 @@ const sources: ApartmentSource[] = [
     floor: 5,
     priceMin: 20000,
     priceMax: 20000,
-    pricingPeriod: "unconfirmed",
+    pricingPeriod: "day",
     // Supplied directly by the owner with the gallery corrections.
     mapUrl: "https://2gis.kz/ustkam/geo/12807747095497019/82.611883,49.965678",
   },
@@ -148,7 +148,7 @@ const sources: ApartmentSource[] = [
     floor: 4,
     priceMin: 20000,
     priceMax: 20000,
-    pricingPeriod: "unconfirmed",
+    pricingPeriod: "day",
     mapUrl: "https://2gis.kz/ustkam/geo/12807747095497085/82.612469,49.966384",
   },
 ];

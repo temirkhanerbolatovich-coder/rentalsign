@@ -181,6 +181,9 @@ export function ContractActions({
               onChange={(e) => setTtl(Number(e.target.value))}
             />
           </label>
+          <p className="mt-3 text-xs leading-5 text-slate-600">
+            <T text="После создания ссылки даты договора, включая выезд, появятся как забронированные. Пересечения с другими бронями не блокируются: проверьте расписание." />
+          </p>
           <div className="mt-3">
             <ConfirmAction
               title={

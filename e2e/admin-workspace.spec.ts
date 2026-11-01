@@ -226,7 +226,9 @@ test("private template and apartment workspace prepare a contract with minimal r
     new RegExp(`/contracts/new\\?propertyId=${property.id}$`),
   );
   await expect(page.getByLabel("Объект недвижимости")).toHaveValue(property.id);
-  await expect(page.getByLabel("Аренда за весь срок, ₸")).toHaveValue("48000");
+  await expect(page.getByLabel("Аренда за весь срок, ₸")).toHaveValue(
+    String(apartment.priceMin),
+  );
   await page
     .getByText("Реквизиты арендодателя", { exact: false })
     .first()

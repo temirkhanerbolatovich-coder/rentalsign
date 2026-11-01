@@ -350,9 +350,12 @@ export function PropertiesManager({
                     </p>
                     <p className="mt-1 text-sm font-semibold">
                       <Localized>
-                        {property.catalogSlug && !property.rent
-                          ? "Указать в договоре"
-                          : money(property.rent)}
+                        {apartment?.pricingPeriod === "day" &&
+                        apartment.priceMin !== null
+                          ? "По цене каталога"
+                          : property.catalogSlug && !property.rent
+                            ? "Указать в договоре"
+                            : money(property.rent)}
                       </Localized>
                     </p>
                   </div>
@@ -606,7 +609,7 @@ export function PropertiesManager({
             {editing?.catalogSlug && (
               <p className="text-xs leading-5 text-slate-500">
                 {" "}
-                <T text="Сумма для договора хранится отдельно от цены в публичном каталоге. Если она не указана, заполните её при оформлении договора." />{" "}
+                <T text="Для нового договора сумма рассчитывается по суточной цене каталога и может быть изменена в форме договора. Сохранённая здесь сумма не меняет цену на сайте." />{" "}
               </p>
             )}
             {error && (

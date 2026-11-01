@@ -16,13 +16,18 @@ test("public catalog supports address search, price filters and sorting without 
     exact: true,
   });
   await expect(catalog.getByRole("article")).toHaveCount(apartments.length);
-  for (const title of ["Квартира на Михаэлиса, 8", "Квартира на Михаэлиса, 8/2"]) {
+  for (const title of [
+    "Квартира на Михаэлиса, 8",
+    "Квартира на Михаэлиса, 8/2",
+  ]) {
     const card = catalog.getByRole("article").filter({
       has: page.getByRole("heading", { name: title, exact: true }),
     });
     await expect(card).toContainText(/20\s*000/);
   }
-  await expect(catalog.getByRole("heading", { name: "Квартира на Базовой, 2/6 · № 26" })).toHaveCount(0);
+  await expect(
+    catalog.getByRole("heading", { name: "Квартира на Базовой, 2/6 · № 26" }),
+  ).toHaveCount(0);
   await catalog.getByRole("article").last().scrollIntoViewIfNeeded();
   await expect
     .poll(() =>
@@ -211,7 +216,10 @@ test("corrected apartment details expose the confirmed addresses, photo sets and
       )
       .toBeGreaterThan(0);
     if (apartment.unit === "10") {
-      await page.locator("summary").filter({ hasText: "Вход и домофон" }).click();
+      await page
+        .locator("summary")
+        .filter({ hasText: "Вход и домофон" })
+        .click();
       await expect(
         page.getByText(/10.*видеодомофон|видеодомофон.*10/i),
       ).toBeVisible();
@@ -283,7 +291,9 @@ test("owner handoff authenticates, imports once and requires an agreed period to
     ).rent,
   ).toBe(0);
   await expect(page.getByLabel("Объект недвижимости")).toHaveValue(imported.id);
-  await expect(page.getByLabel("Аренда за весь срок, ₸")).toHaveValue("0");
+  await expect(page.getByLabel("Аренда за весь срок, ₸")).toHaveValue(
+    String(apartment.priceMin),
+  );
   if (!(await page.getByLabel("ФИО или название организации").isVisible()))
     await page
       .locator("summary")
@@ -295,6 +305,7 @@ test("owner handoff authenticates, imports once and requires an agreed period to
   await page.getByLabel("ФИО арендатора").fill("ДЕМО • Арендатор каталога UI");
   await page.getByLabel("Контактный телефон").nth(0).fill("+7 000 000 00 00");
   await page.getByLabel("Контактный телефон").nth(1).fill("+7 000 000 00 00");
+  await page.getByLabel("Аренда за весь срок, ₸").fill("0");
   await page.getByRole("button", { name: "Предварительный просмотр" }).click();
   await expect(
     page.getByRole("alert").filter({ hasText: /стоимость|сумм/i }),

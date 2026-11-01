@@ -4,7 +4,7 @@ import { T, Localized, translate, useLanguage } from "@/components/language";
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -26,6 +26,8 @@ import {
   type ContractTemplate,
 } from "@/domain/contract-template";
 import { findApartment } from "@/catalog/apartments";
+import { catalogRent } from "@/domain/rental-pricing";
+import { ApartmentPrice } from "./apartment-price";
 import {
   contractSchema,
   type ContractInput,
@@ -37,24 +39,40 @@ type FormProperty = PropertyInput & {
   catalogSlug?: string | null;
   photo: { src: string; alt: string } | null;
 };
+// Prevent an early edit from being lost before the interactive form hydrates.
+const subscribeToHydration = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
+
 function localTime(value: string) {
   return new Date(new Date(value).getTime() + 5 * 3600000)
     .toISOString()
     .slice(0, 16);
 }
-const initial = (template: ContractTemplate): ContractInput => ({
-  ...template,
-  propertyId: "",
-  tenantName: "",
-  tenantId: "",
-  tenantPhone: "",
-  tenantDocument: "",
-  tenantAddress: "",
-  checkIn: new Date(Date.now() + 86400000).toISOString(),
-  checkOut: new Date(Date.now() + 2 * 86400000).toISOString(),
-  rent: 0,
-  deposit: 0,
-});
+const initial = (template: ContractTemplate): ContractInput => {
+  const now = Math.floor(Date.now() / 60000) * 60000;
+  return {
+    ...template,
+    propertyId: "",
+    tenantName: "",
+    tenantId: "",
+    tenantPhone: "",
+    tenantDocument: "",
+    tenantAddress: "",
+    checkIn: new Date(now + 86400000).toISOString(),
+    checkOut: new Date(now + 2 * 86400000).toISOString(),
+    rent: 0,
+    deposit: 0,
+  };
+};
+function hasCatalogDailyRate(slug?: string | null) {
+  const apartment = slug ? findApartment(slug) : undefined;
+  return Boolean(
+    apartment &&
+    apartment.pricingPeriod === "day" &&
+    apartment.priceMin !== null,
+  );
+}
 export function ContractForm({
   properties,
   existing,
@@ -67,24 +85,41 @@ export function ContractForm({
   templateDefaults?: ContractTemplate;
 }) {
   const language = useLanguage();
+  const ready = useSyncExternalStore(
+    subscribeToHydration,
+    clientReady,
+    serverReady,
+  );
   const router = useRouter();
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
-  const [data, setData] = useState<ContractInput>(
-    existing?.snapshot
-      ? contractSchema.parse(
-          Object.fromEntries(
-            Object.entries(existing.snapshot).filter(
-              ([key]) => !["number", "createdAt", "property"].includes(key),
-            ),
+  const [data, setData] = useState<ContractInput>(() => {
+    if (existing?.snapshot) {
+      return contractSchema.parse(
+        Object.fromEntries(
+          Object.entries(existing.snapshot).filter(
+            ([key]) => !["number", "createdAt", "property"].includes(key),
           ),
-        )
-      : {
-          ...initial(templateDefaults),
-          propertyId: selectedPropertyId || "",
-          rent: selectedProperty?.rent || 0,
-          deposit: selectedProperty?.deposit || 0,
-        },
+        ),
+      );
+    }
+    const initialData = initial(templateDefaults);
+    return {
+      ...initialData,
+      propertyId: selectedPropertyId || "",
+      rent: hasCatalogDailyRate(selectedProperty?.catalogSlug)
+        ? (catalogRent(
+            selectedProperty?.catalogSlug,
+            initialData.checkIn,
+            initialData.checkOut,
+          )?.total ?? 0)
+        : selectedProperty?.rent || 0,
+      deposit: selectedProperty?.deposit || 0,
+    };
+  });
+  const [automaticRent, setAutomaticRent] = useState(
+    !existing && hasCatalogDailyRate(selectedProperty?.catalogSlug),
   );
+  const [discount, setDiscount] = useState(0);
   const [preview, setPreview] = useState(false);
   const [landlordOpen] = useState(() => {
     const landlord = existing?.snapshot ?? templateDefaults;
@@ -96,8 +131,34 @@ export function ContractForm({
   const apartment = property?.catalogSlug
     ? findApartment(property.catalogSlug)
     : undefined;
+  const suggestedRent = catalogRent(
+    property?.catalogSlug,
+    data.checkIn,
+    data.checkOut,
+  );
   function update(key: keyof ContractInput, value: string | number) {
-    setData((previous) => ({ ...previous, [key]: value }));
+    if (key === "rent") {
+      setAutomaticRent(false);
+      setDiscount(0);
+    }
+    setData((previous) => {
+      const next = { ...previous, [key]: value };
+      if (automaticRent && (key === "checkIn" || key === "checkOut")) {
+        const calculated = catalogRent(
+          property?.catalogSlug,
+          next.checkIn,
+          next.checkOut,
+        );
+        next.rent =
+          calculated &&
+          Number.isSafeInteger(discount) &&
+          discount >= 0 &&
+          discount < calculated.total
+            ? calculated.total - discount
+            : 0;
+      }
+      return next;
+    });
   }
   function validate() {
     const parsed = contractSchema.safeParse(data);
@@ -248,15 +309,25 @@ export function ContractForm({
                     <select
                       required
                       className="field"
+                      disabled={!ready}
                       value={data.propertyId}
                       onChange={(e) => {
                         const p = properties.find(
                           (p) => p.id === e.target.value,
                         );
+                        const propertyId = e.target.value;
+                        setAutomaticRent(hasCatalogDailyRate(p?.catalogSlug));
+                        setDiscount(0);
                         setData((previous) => ({
                           ...previous,
-                          propertyId: e.target.value,
-                          rent: p?.rent || 0,
+                          propertyId,
+                          rent: hasCatalogDailyRate(p?.catalogSlug)
+                            ? (catalogRent(
+                                p?.catalogSlug,
+                                previous.checkIn,
+                                previous.checkOut,
+                              )?.total ?? 0)
+                            : p?.rent || 0,
                           deposit: p?.deposit || 0,
                         }));
                       }}
@@ -319,8 +390,51 @@ export function ContractForm({
                       </Link>
                       <p className="mt-2">
                         {" "}
-                        <T text="Согласуйте даты и итоговую сумму с арендатором. Тариф из каталога не переносится в стоимость всего договора автоматически." />{" "}
+                        {hasCatalogDailyRate(apartment.slug) ? (
+                          existing && !automaticRent ? (
+                            <T text="Сумма сохранена в черновике и не пересчитывается автоматически. При необходимости запустите пересчёт." />
+                          ) : (
+                            <T text="Сумма рассчитывается по суточной цене из каталога. Вы можете изменить её вручную или сделать скидку." />
+                          )
+                        ) : (
+                          <T text="Укажите итоговую стоимость вручную." />
+                        )}{" "}
                       </p>
+                      <p className="mt-2">
+                        <T text="Цена за сутки" />:{" "}
+                        <ApartmentPrice apartment={apartment} />
+                        {suggestedRent && (
+                          <>
+                            {" "}
+                            · {suggestedRent.days} <T text="сут." /> ·{" "}
+                            <T
+                              text={
+                                suggestedRent.maxDailyRate !== null &&
+                                suggestedRent.maxDailyRate !==
+                                  suggestedRent.dailyRate
+                                  ? "Расчёт от нижней границы цены"
+                                  : "Расчёт по цене каталога"
+                              }
+                            />
+                            : {money(suggestedRent.total)}
+                          </>
+                        )}
+                      </p>
+                      {suggestedRent && !automaticRent && (
+                        <button
+                          type="button"
+                          className="mt-2 font-semibold underline underline-offset-4"
+                          onClick={() => {
+                            setData((previous) => ({
+                              ...previous,
+                              rent: suggestedRent.total,
+                            }));
+                            setAutomaticRent(true);
+                          }}
+                        >
+                          <T text="Рассчитать заново по цене сайта" />
+                        </button>
+                      )}
                       {apartment.arrivalInstructions && (
                         <p className="mt-2 font-medium">
                           {apartment.arrivalInstructions}
@@ -341,6 +455,7 @@ export function ContractForm({
                         <input
                           className="field"
                           type="datetime-local"
+                          disabled={!ready}
                           required
                           value={localTime(data[key])}
                           onChange={(e) => {
@@ -367,6 +482,7 @@ export function ContractForm({
                         <input
                           className="field"
                           type="number"
+                          disabled={!ready}
                           min={key === "rent" && property?.catalogSlug ? 1 : 0}
                           max={100000000}
                           step={1}
@@ -377,6 +493,48 @@ export function ContractForm({
                       </label>
                     ))}
                   </div>
+                  {suggestedRent && (
+                    <div className="mt-5">
+                      <label className="block max-w-xs">
+                        <span className="label">
+                          <T text="Скидка, ₸" />
+                        </span>
+                        <input
+                          className="field"
+                          type="number"
+                          disabled={!ready}
+                          min={0}
+                          max={suggestedRent.total - 1}
+                          step={1}
+                          value={discount}
+                          onChange={(event) => {
+                            const value = Number(event.target.value);
+                            setDiscount(value);
+                            setAutomaticRent(true);
+                            setData((previous) => ({
+                              ...previous,
+                              rent:
+                                Number.isSafeInteger(value) &&
+                                value >= 0 &&
+                                value < suggestedRent.total
+                                  ? suggestedRent.total - value
+                                  : 0,
+                            }));
+                          }}
+                        />
+                      </label>
+                      <p className="mt-2 text-xs text-slate-500">
+                        <T text="Скидка вычитается из рассчитанной суммы. В договор попадёт итоговая стоимость." />
+                      </p>
+                      {(!Number.isSafeInteger(discount) ||
+                        discount < 0 ||
+                        discount >= suggestedRent.total) && (
+                        <p role="alert" className="error mt-2">
+                          <T text="Скидка должна быть меньше рассчитанной суммы." />
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <p className="mt-4 text-[11px] text-slate-400">
                     {" "}
                     <T text="Время: Казахстан, Asia/Almaty (UTC+5). Стоимость за весь указанный период." />{" "}

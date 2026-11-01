@@ -5,16 +5,28 @@ import { AppError } from "@/lib/errors";
 import { availabilitySchema } from "@/lib/availability";
 import { findApartment } from "@/catalog/apartments";
 import { z } from "zod";
+import { contractReservations } from "@/services/contract-availability";
 export async function GET(request: Request) {
   return api(async () => {
     const slug = new URL(request.url).searchParams.get("apartment");
     if (slug) {
       if (!findApartment(slug)) throw new AppError(404, "Квартира не найдена");
-      return db.availability.findMany({
-        where: { catalogSlug: slug },
-        select: { startDate: true, endDate: true, status: true },
-        orderBy: { startDate: "asc" },
-      });
+      const [manual, automatic] = await Promise.all([
+        db.availability.findMany({
+          where: { catalogSlug: slug },
+          select: { startDate: true, endDate: true, status: true },
+          orderBy: { startDate: "asc" },
+        }),
+        contractReservations({ catalogSlug: slug }),
+      ]);
+      return [
+        ...manual,
+        ...automatic.map(({ startDate, endDate, status }) => ({
+          startDate,
+          endDate,
+          status,
+        })),
+      ].sort((a, b) => a.startDate.localeCompare(b.startDate));
     }
     const admin = await requireAdmin();
     return db.availability.findMany({
